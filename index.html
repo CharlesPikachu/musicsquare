@@ -37,7 +37,7 @@
       justify-content: center;
     }
 
-    /* 主卡片：玻璃拟态 + 可爱 */
+    /* 主卡片 */
     .card {
       width: 100%;
       max-width: 960px;
@@ -56,7 +56,7 @@
       overflow: hidden;
     }
 
-    /* 漂浮的小动物元素（偏皮卡丘风：小鼠 + 闪电） */
+    /* 漂浮小元素：皮卡丘风 */
     .floating-animal {
       position: absolute;
       font-size: 32px;
@@ -143,7 +143,7 @@
       color: rgba(220, 230, 255, 0.8);
     }
 
-    /* 语言切换按钮 + 作者 */
+    /* 右侧 header 区：语言 + 作者 */
     .header-right {
       margin-left: auto;
       display: flex;
@@ -331,7 +331,7 @@
       transform: translateY(-0.5px);
     }
 
-    /* 右侧：当前歌曲与歌词 */
+    /* 右侧：当前歌曲、频谱、播放列表、歌词 */
     .now-playing-card {
       background: radial-gradient(circle at bottom right, rgba(255, 234, 167, 0.18), rgba(52, 73, 94, 0.7));
       border-radius: 18px;
@@ -339,7 +339,7 @@
       border: 1px solid rgba(255, 234, 167, 0.35);
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
       height: 100%;
     }
 
@@ -468,6 +468,95 @@
       background: linear-gradient(120deg, #ffeaa7, #ffeaa7);
     }
 
+    /* 频谱可视化 */
+    #vizCanvas {
+      width: 100%;
+      height: 70px;
+      border-radius: 10px;
+      margin-top: 4px;
+      background: rgba(5, 9, 22, 0.95);
+      border: 1px solid rgba(174, 207, 255, 0.22);
+    }
+
+    /* 播放列表 */
+    .playlist-wrap {
+      margin-top: 6px;
+      background: rgba(5, 9, 22, 0.8);
+      border-radius: 12px;
+      border: 1px solid rgba(174, 207, 255, 0.18);
+      padding: 6px 8px;
+      max-height: 110px;
+      overflow-y: auto;
+    }
+
+    .playlist-header {
+      font-size: 11px;
+      color: rgba(200, 214, 255, 0.95);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .playlist-header span.right {
+      font-size: 10px;
+      color: rgba(180, 195, 238, 0.95);
+    }
+
+    .playlist-list {
+      max-height: 80px;
+    }
+
+    .playlist-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2px 3px;
+      border-radius: 8px;
+      font-size: 11px;
+      color: rgba(225, 235, 255, 0.95);
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+
+    .playlist-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      transform: translateY(-0.5px);
+    }
+
+    .playlist-item.active {
+      background: linear-gradient(120deg, rgba(253, 203, 110, 0.9), rgba(116, 185, 255, 0.7));
+      color: #1b1b1b;
+    }
+
+    .playlist-index {
+      min-width: 18px;
+      text-align: right;
+      margin-right: 4px;
+    }
+
+    .playlist-main {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .playlist-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .playlist-singer {
+      font-size: 10px;
+      opacity: 0.9;
+    }
+
+    .playlist-badge {
+      font-size: 10px;
+      margin-left: 4px;
+      opacity: 0.85;
+    }
+
     /* 歌词区 */
     .lyrics-wrap {
       flex: 1;
@@ -480,6 +569,7 @@
       scrollbar-width: thin;
       scrollbar-color: rgba(116, 185, 255, 0.7) transparent;
       font-size: 12px;
+      margin-top: 6px;
     }
 
     .lyrics-wrap::-webkit-scrollbar {
@@ -527,6 +617,13 @@
       color: #ffeaa7;
     }
 
+    .shortcuts-hint {
+      margin-top: 2px;
+      font-size: 10px;
+      color: rgba(190, 205, 245, 0.9);
+      line-height: 1.4;
+    }
+
     @media (max-width: 768px) {
       .card {
         grid-template-columns: 1fr;
@@ -536,7 +633,10 @@
         max-height: 200px;
       }
       .now-playing-card {
-        max-height: 320px;
+        max-height: none;
+      }
+      #vizCanvas {
+        height: 60px;
       }
     }
   </style>
@@ -546,7 +646,7 @@
 
   <div class="main-wrapper">
     <div class="card">
-      <!-- 漂浮的小动物表情 -->
+      <!-- 漂浮小表情 -->
       <div class="floating-animal mouse">🐭</div>
       <div class="floating-animal bolt">⚡</div>
       <div class="floating-animal star">⭐</div>
@@ -591,7 +691,7 @@
         <div id="results" class="results"></div>
       </div>
 
-      <!-- 右侧：当前歌曲 + 播放器 + 歌词 -->
+      <!-- 右侧：当前歌曲 + 播放器 + 频谱 + 播放列表 + 歌词 -->
       <div class="card-right">
         <div class="now-playing-card">
           <div class="now-playing-top">
@@ -634,538 +734,732 @@
             </div>
           </div>
 
+          <!-- 频谱可视化 -->
+          <canvas id="vizCanvas"></canvas>
+
+          <!-- 播放列表 -->
+          <div class="playlist-wrap">
+            <div class="playlist-header">
+              <span id="playlistTitle">播放列表</span>
+              <span class="right" id="playlistCount">空空如也</span>
+            </div>
+            <div id="playlistList" class="playlist-list"></div>
+          </div>
+
+          <!-- 歌词 -->
           <div id="lyricsWrap" class="lyrics-wrap"></div>
           <div id="lyricsLinkWrap" class="lyrics-link-wrap"></div>
 
           <div class="status-text">
             <span id="globalStatusText">等待搜索...</span>
           </div>
+          <div id="shortcutsHint" class="shortcuts-hint"></div>
         </div>
       </div>
     </div>
   </div>
 
   <script>
-    // ================================
-    // 粒子背景：扩散 + 聚合成表情/动物
-    // ================================
-    (function () {
-      const canvas = document.getElementById("bgCanvas");
-      const ctx = canvas.getContext("2d");
+  // ================================
+  // 背景粒子
+  // ================================
+  (function () {
+    const canvas = document.getElementById("bgCanvas");
+    const ctx = canvas.getContext("2d");
 
-      let particles = [];
-      const PARTICLE_COUNT = 650;
-      const COLORS = [
-        "rgba(255,234,167,0.9)",
-        "rgba(253,203,110,0.9)",
-        "rgba(116,185,255,0.85)",
-        "rgba(162,155,254,0.9)",
-      ];
+    let particles = [];
+    const PARTICLE_COUNT = 650;
+    const COLORS = [
+      "rgba(255,234,167,0.9)",
+      "rgba(253,203,110,0.9)",
+      "rgba(116,185,255,0.85)",
+      "rgba(162,155,254,0.9)"
+    ];
 
-      let shapeMode = "scatter";
-      const shapeNames = ["smile", "mouse", "star"];
-      let shapeIndex = 0;
-      const shapeCache = {};
-      let lastTimestamp = 0;
+    let shapeMode = "scatter";
+    const shapeNames = ["smile", "mouse", "star"];
+    let shapeIndex = 0;
+    const shapeCache = {};
+    let lastTimestamp = 0;
 
-      function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        if (!particles.length) {
-          createParticles();
-        } else {
-          particles.forEach((p) => {
-            p.x = Math.random() * canvas.width;
-            p.y = Math.random() * canvas.height;
-            p.targetX = p.x;
-            p.targetY = p.y;
-          });
-        }
-        buildShapes();
-      }
-
-      function createParticles() {
-        particles = [];
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-          particles.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
-            vx: 0,
-            vy: 0,
-            size: 1.4 + Math.random() * 2.0,
-            color: COLORS[Math.floor(Math.random() * COLORS.length)],
-            targetX: Math.random() * canvas.width,
-            targetY: Math.random() * canvas.height,
-          });
-        }
-      }
-
-      // 根据 emoji 绘制轮廓，采样为点集
-      function generateShapePoints(char) {
-        const off = document.createElement("canvas");
-        const w = 180;
-        const h = 180;
-        off.width = w;
-        off.height = h;
-        const octx = off.getContext("2d");
-        octx.clearRect(0, 0, w, h);
-        octx.fillStyle = "#fff";
-        octx.textAlign = "center";
-        octx.textBaseline = "middle";
-        octx.font = "160px system-ui, Apple Color Emoji, Segoe UI Emoji";
-        octx.fillText(char, w / 2, h / 2);
-
-        const imgData = octx.getImageData(0, 0, w, h).data;
-        const pts = [];
-        const gap = 4;
-        const scale = (Math.min(canvas.width, canvas.height) / w) * 0.6;
-
-        for (let y = 0; y < h; y += gap) {
-          for (let x = 0; x < w; x += gap) {
-            const idx = (y * w + x) * 4 + 3;
-            const alpha = imgData[idx];
-            if (alpha > 50) {
-              const cx = canvas.width / 2 + (x - w / 2) * scale;
-              const cy = canvas.height / 2 + (y - h / 2) * scale;
-              pts.push({ x: cx, y: cy });
-            }
-          }
-        }
-        return pts;
-      }
-
-      function buildShapes() {
-        shapeCache["smile"] = generateShapePoints("😊");
-        shapeCache["mouse"] = generateShapePoints("🐭");
-        shapeCache["star"] = generateShapePoints("⭐");
-      }
-
-      function scatterTargets() {
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      if (!particles.length) {
+        createParticles();
+      } else {
         particles.forEach((p) => {
-          p.targetX = Math.random() * canvas.width;
-          p.targetY = Math.random() * canvas.height;
+          p.x = Math.random() * canvas.width;
+          p.y = Math.random() * canvas.height;
+          p.targetX = p.x;
+          p.targetY = p.y;
         });
       }
-
-      function applyShapeTargets(name) {
-        const pts = shapeCache[name];
-        if (!pts || !pts.length) return;
-        particles.forEach((p, i) => {
-          const pt = pts[i % pts.length];
-          p.targetX = pt.x + (Math.random() - 0.5) * 10;
-          p.targetY = pt.y + (Math.random() - 0.5) * 10;
-        });
-      }
-
-      function animate(ts) {
-        requestAnimationFrame(animate);
-        const dt = ts - lastTimestamp;
-        lastTimestamp = ts;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        if (Math.random() < 0.003 && shapeMode === "shape") {
-          particles.forEach((p) => {
-            p.targetX += (Math.random() - 0.5) * 6;
-            p.targetY += (Math.random() - 0.5) * 6;
-          });
-        }
-
-        for (let i = 0; i < particles.length; i++) {
-          const p = particles[i];
-          const spring = 0.035;
-          const friction = 0.9;
-
-          const dx = p.targetX - p.x;
-          const dy = p.targetY - p.y;
-
-          p.vx += dx * spring;
-          p.vy += dy * spring;
-
-          p.vx *= friction;
-          p.vy *= friction;
-
-          p.x += p.vx * (dt / 16.7);
-          p.y += p.vy * (dt / 16.7);
-
-          if (p.x < -50 || p.x > canvas.width + 50) {
-            p.x = Math.random() * canvas.width;
-            p.targetX = p.x;
-          }
-          if (p.y < -50 || p.y > canvas.height + 50) {
-            p.y = Math.random() * canvas.height;
-            p.targetY = p.y;
-          }
-
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-          ctx.fillStyle = p.color;
-          ctx.fill();
-
-          for (let j = i + 1; j < i + 18 && j < particles.length; j++) {
-            const p2 = particles[j];
-            const dx2 = p2.x - p.x;
-            const dy2 = p2.y - p.y;
-            const dist2 = dx2 * dx2 + dy2 * dy2;
-            if (dist2 < 120 * 120) {
-              const alpha = 1 - dist2 / (120 * 120);
-              ctx.beginPath();
-              ctx.moveTo(p.x, p.y);
-              ctx.lineTo(p2.x, p2.y);
-              ctx.strokeStyle = "rgba(255, 234, 167," + (alpha * 0.25) + ")";
-              ctx.lineWidth = 0.6;
-              ctx.stroke();
-            }
-          }
-        }
-      }
-
-      function startShapeCycle() {
-        setInterval(() => {
-          if (shapeMode === "scatter") {
-            const name = shapeNames[shapeIndex % shapeNames.length];
-            shapeIndex++;
-            shapeMode = "shape";
-            applyShapeTargets(name);
-          } else {
-            shapeMode = "scatter";
-            scatterTargets();
-          }
-        }, 11500);
-      }
-
-      window.addEventListener("resize", resizeCanvas);
-      resizeCanvas();
-      createParticles();
       buildShapes();
-      scatterTargets();
-      startShapeCycle();
-      requestAnimationFrame(animate);
-    })();
+    }
 
-    // ================================
-    // 音乐搜索 / 播放 / 歌词逻辑 + 中英切换
-    // ================================
-    (function () {
-      const API_BASE = "https://api.cenguigui.cn/api/mg_music/";
-
-      const searchForm = document.getElementById("searchForm");
-      const searchInput = document.getElementById("searchInput");
-      const resultsEl = document.getElementById("results");
-      const searchBtn = document.getElementById("searchBtn");
-
-      const audioEl = document.getElementById("audioEl");
-      const coverImg = document.getElementById("coverImg");
-      const songTitleEl = document.getElementById("songTitle");
-      const songSingerEl = document.getElementById("songSinger");
-      const songStatusShort = document.getElementById("songStatusShort");
-      const globalStatusText = document.getElementById("globalStatusText");
-      const lyricsWrap = document.getElementById("lyricsWrap");
-      const lyricsLinkWrap = document.getElementById("lyricsLinkWrap");
-
-      const toggleLyricsBtn = document.getElementById("toggleLyricsBtn");
-      const downloadMusicBtn = document.getElementById("downloadMusicBtn");
-      const openOriginBtn = document.getElementById("openOriginBtn");
-      const langToggleBtn = document.getElementById("langToggleBtn");
-      const appTitleEl = document.getElementById("appTitle");
-      const appSubtitleEl = document.getElementById("appSubtitle");
-      const authorLineEl = document.getElementById("authorLine");
-
-      let currentLang = "zh";
-
-      const langStaticTexts = {
-        zh: {
-          appTitle: "皮卡丘的音乐站",
-          appSubtitle: "搜索 · 播放 · 跟着小皮卡一起摇头",
-          author: "作者：Zhenchao Jin + GPT5",
-          searchPlaceholder: "输入歌名 / 歌手，比如：周杰伦",
-          searchBtn: "搜索一下",
-          searchStatus: (q) => `正在搜索 “${q}” ...`,
-          searchResult: (n) => `搜索到 ${n} 个结果，选一首来听吧～`,
-          searchNoResult: "没有搜索到结果，换个关键词试试？",
-          resultsInitialHint:
-            "⚡ 小提示：先在上面搜索\n比如输入 周杰伦，再点一首歌播放～",
-          lyricsInitialPlaceholder:
-            "🎤 歌词将会在这里出现，并随着播放自动高亮～",
-          lyricsLoading: "正在加载歌词...",
-          lyricsParseFail: "歌词解析失败，可能是空文件。",
-          lyricsNone: "这首歌暂时没有获取到歌词～",
-          lyricsLoadFail: "歌词加载失败，请稍后重试或直接打开歌词文件。",
-          noResultPlaceholder:
-            "暂时没有结果，可以尝试换个歌名 / 歌手再搜一次～",
-          statusInit: "等待搜索，你可以试试输入“周杰伦”。",
-          statusPlaying: (title) => `开始播放：${title}`,
-          statusSearchError: "搜索时出现错误，请稍后重试。",
-          statusSongError: "加载歌曲时出现错误，请稍后重试。",
-          playBtn: "▶ 播放",
-          toggleLyricsBtn: "🎼 显示/隐藏歌词",
-          downloadBtn: "⬇️ 下载音乐",
-          openOriginBtn: "🌐 打开原链接",
-          stateIdle: "闲置中",
-          statePlaying: "播放中",
-          statePaused: "已暂停",
-          stateEnded: "已结束",
-          openLyricsPrefix: "如果歌词无法正常显示，可以打开原始歌词文件：",
-          openLyricsText: "打开原始歌词",
-        },
-        en: {
-          appTitle: "Pikachu Music Station",
-          appSubtitle: "Search · Play · Shake with Pikachu",
-          author: "Author: Zhenchao Jin + GPT5",
-          searchPlaceholder: "Song / artist, e.g. Jay Chou",
-          searchBtn: "Search",
-          searchStatus: (q) => `Searching for “${q}” ...`,
-          searchResult: (n) => `Found ${n} results. Pick one to play!`,
-          searchNoResult: "No results, try another keyword?",
-          resultsInitialHint:
-            "⚡ Tip: search above\nFor example, type Jay Chou and click a song to play.",
-          lyricsInitialPlaceholder:
-            "🎤 Lyrics will appear here and auto-highlight with playback.",
-          lyricsLoading: "Loading lyrics...",
-          lyricsParseFail: "Failed to parse lyrics (file may be empty).",
-          lyricsNone: "No lyrics found for this song.",
-          lyricsLoadFail: "Failed to load lyrics. Please try again later or open the raw file.",
-          noResultPlaceholder:
-            "No results for now. Try a different song / artist.",
-          statusInit: 'Waiting for search. Try typing "Jay Chou".',
-          statusPlaying: (title) => `Now playing: ${title}`,
-          statusSearchError: "Error during search, please try again later.",
-          statusSongError: "Error loading song, please try again later.",
-          playBtn: "▶ Play",
-          toggleLyricsBtn: "🎼 Show / Hide Lyrics",
-          downloadBtn: "⬇️ Download",
-          openOriginBtn: "🌐 Open Original",
-          stateIdle: "Idle",
-          statePlaying: "Playing",
-          statePaused: "Paused",
-          stateEnded: "Ended",
-          openLyricsPrefix: "If lyrics cannot be displayed, open the raw lyrics file:",
-          openLyricsText: "Open raw lyrics",
-        },
-      };
-
-      let lastQuery = "";
-      let currentIndex = null;
-      let lrcEntries = [];
-      let currentLyricIndex = -1;
-      let lyricsVisible = true;
-
-      function setStatus(text, kind) {
-        globalStatusText.textContent = text;
-        if (kind) {
-          globalStatusText.dataset.kind = kind;
-        }
+    function createParticles() {
+      particles = [];
+      for (let i = 0; i < PARTICLE_COUNT; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          vx: 0,
+          vy: 0,
+          size: 1.4 + Math.random() * 2.0,
+          color: COLORS[Math.floor(Math.random() * COLORS.length)],
+          targetX: Math.random() * canvas.width,
+          targetY: Math.random() * canvas.height
+        });
       }
+    }
 
-      function renderInitialResultsHint() {
-        resultsEl.innerHTML = "";
-        const hint = langStaticTexts[currentLang].resultsInitialHint;
-        const div = document.createElement("div");
-        div.className = "lyrics-placeholder";
-        div.innerHTML = hint.replace(/\n/g, "<br/>");
-        resultsEl.appendChild(div);
-      }
+    function generateShapePoints(char) {
+      const off = document.createElement("canvas");
+      const w = 180;
+      const h = 180;
+      off.width = w;
+      off.height = h;
+      const octx = off.getContext("2d");
+      octx.clearRect(0, 0, w, h);
+      octx.fillStyle = "#fff";
+      octx.textAlign = "center";
+      octx.textBaseline = "middle";
+      octx.font = "160px system-ui, Apple Color Emoji, Segoe UI Emoji";
+      octx.fillText(char, w / 2, h / 2);
 
-      function showLyricsPlaceholder(text) {
-        lyricsWrap.innerHTML = "";
-        const div = document.createElement("div");
-        div.className = "lyrics-placeholder";
-        div.textContent = text;
-        lyricsWrap.appendChild(div);
-        if (lyricsLinkWrap) {
-          lyricsLinkWrap.innerHTML = "";
-        }
-      }
+      const imgData = octx.getImageData(0, 0, w, h).data;
+      const pts = [];
+      const gap = 4;
+      const scale = (Math.min(canvas.width, canvas.height) / w) * 0.6;
 
-      function showRawLyricsLink(url) {
-        if (!lyricsLinkWrap) return;
-        const t = langStaticTexts[currentLang];
-        lyricsLinkWrap.innerHTML = "";
-
-        const info = document.createElement("span");
-        info.textContent = t.openLyricsPrefix;
-
-        const link = document.createElement("a");
-        link.href = url;
-        link.target = "_blank";
-        link.rel = "noopener";
-        link.style.marginLeft = "4px";
-        link.style.color = "#74b9ff";
-        link.style.textDecoration = "underline";
-        link.textContent = t.openLyricsText;
-
-        lyricsLinkWrap.appendChild(info);
-        lyricsLinkWrap.appendChild(link);
-      }
-
-      function applyLanguage() {
-        const t = langStaticTexts[currentLang];
-        appTitleEl.textContent = t.appTitle;
-        appSubtitleEl.textContent = t.appSubtitle;
-        authorLineEl.textContent = t.author;
-        searchInput.placeholder = t.searchPlaceholder;
-        searchBtn.innerHTML = t.searchBtn + '<span>⚡</span>';
-        toggleLyricsBtn.textContent = t.toggleLyricsBtn;
-        downloadMusicBtn.textContent = t.downloadBtn;
-        openOriginBtn.textContent = t.openOriginBtn;
-        songStatusShort.textContent = t.stateIdle;
-        langToggleBtn.textContent = currentLang === "zh" ? "中 / EN" : "EN / 中";
-
-        if (!resultsEl.hasChildNodes()) {
-          renderInitialResultsHint();
-        }
-        if (!lrcEntries.length) {
-          showLyricsPlaceholder(t.lyricsInitialPlaceholder);
-        }
-        if (globalStatusText.dataset.kind === "init") {
-          setStatus(t.statusInit, "init");
-        }
-      }
-
-      langToggleBtn.addEventListener("click", () => {
-        currentLang = currentLang === "zh" ? "en" : "zh";
-        applyLanguage();
-      });
-
-      searchForm.addEventListener("submit", function (e) {
-        e.preventDefault();
-        const q = searchInput.value.trim();
-        if (!q) return;
-        lastQuery = q;
-        currentIndex = null;
-        currentLyricIndex = -1;
-        lrcEntries = [];
-        const t = langStaticTexts[currentLang];
-        setStatus(t.searchStatus(q));
-        searchSongs(q);
-      });
-
-      async function searchSongs(query) {
-        const t = langStaticTexts[currentLang];
-        try {
-          const url =
-            API_BASE +
-            "?msg=" +
-            encodeURIComponent(query) +
-            "&type=json";
-          const resp = await fetch(url);
-          const text = await resp.text();
-          const list = parseSearchResultText(text);
-          renderResultList(list);
-          if (!list.length) {
-            setStatus(t.searchNoResult);
-          } else {
-            setStatus(t.searchResult(list.length));
+      for (let y = 0; y < h; y += gap) {
+        for (let x = 0; x < w; x += gap) {
+          const idx = (y * w + x) * 4 + 3;
+          const alpha = imgData[idx];
+          if (alpha > 50) {
+            const cx = canvas.width / 2 + (x - w / 2) * scale;
+            const cy = canvas.height / 2 + (y - h / 2) * scale;
+            pts.push({ x: cx, y: cy });
           }
-        } catch (err) {
-          console.error(err);
-          renderResultList([]);
-          setStatus(t.statusSearchError);
+        }
+      }
+      return pts;
+    }
+
+    function buildShapes() {
+      shapeCache["smile"] = generateShapePoints("😊");
+      shapeCache["mouse"] = generateShapePoints("🐭");
+      shapeCache["star"] = generateShapePoints("⭐");
+    }
+
+    function scatterTargets() {
+      particles.forEach((p) => {
+        p.targetX = Math.random() * canvas.width;
+        p.targetY = Math.random() * canvas.height;
+      });
+    }
+
+    function applyShapeTargets(name) {
+      const pts = shapeCache[name];
+      if (!pts || !pts.length) return;
+      particles.forEach((p, i) => {
+        const pt = pts[i % pts.length];
+        p.targetX = pt.x + (Math.random() - 0.5) * 10;
+        p.targetY = pt.y + (Math.random() - 0.5) * 10;
+      });
+    }
+
+    function animate(ts) {
+      requestAnimationFrame(animate);
+      const dt = ts - lastTimestamp;
+      lastTimestamp = ts;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      if (Math.random() < 0.003 && shapeMode === "shape") {
+        particles.forEach((p) => {
+          p.targetX += (Math.random() - 0.5) * 6;
+          p.targetY += (Math.random() - 0.5) * 6;
+        });
+      }
+
+      for (let i = 0; i < particles.length; i++) {
+        const p = particles[i];
+        const spring = 0.035;
+        const friction = 0.9;
+
+        const dx = p.targetX - p.x;
+        const dy = p.targetY - p.y;
+
+        p.vx += dx * spring;
+        p.vy += dy * spring;
+
+        p.vx *= friction;
+        p.vy *= friction;
+
+        p.x += p.vx * (dt / 16.7);
+        p.y += p.vy * (dt / 16.7);
+
+        if (p.x < -50 || p.x > canvas.width + 50) {
+          p.x = Math.random() * canvas.width;
+          p.targetX = p.x;
+        }
+        if (p.y < -50 || p.y > canvas.height + 50) {
+          p.y = Math.random() * canvas.height;
+          p.targetY = p.y;
+        }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+
+        for (let j = i + 1; j < i + 18 && j < particles.length; j++) {
+          const p2 = particles[j];
+          const dx2 = p2.x - p.x;
+          const dy2 = p2.y - p.y;
+          const dist2 = dx2 * dx2 + dy2 * dy2;
+          if (dist2 < 120 * 120) {
+            const alpha = 1 - dist2 / (120 * 120);
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.strokeStyle = "rgba(255, 234, 167," + (alpha * 0.25) + ")";
+            ctx.lineWidth = 0.6;
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function startShapeCycle() {
+      setInterval(() => {
+        if (shapeMode === "scatter") {
+          const name = shapeNames[shapeIndex % shapeNames.length];
+          shapeIndex++;
+          shapeMode = "shape";
+          applyShapeTargets(name);
+        } else {
+          shapeMode = "scatter";
+          scatterTargets();
+        }
+      }, 11500);
+    }
+
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+    createParticles();
+    buildShapes();
+    scatterTargets();
+    startShapeCycle();
+    requestAnimationFrame(animate);
+  })();
+
+  // ================================
+  // 音乐逻辑：搜索 / 播放 / 歌词 / 播放列表 / 快捷键 / 频谱（不再改动音频管线）
+  // ================================
+  (function () {
+    const API_BASE = "https://api.cenguigui.cn/api/mg_music/";
+
+    const searchForm = document.getElementById("searchForm");
+    const searchInput = document.getElementById("searchInput");
+    const resultsEl = document.getElementById("results");
+    const searchBtn = document.getElementById("searchBtn");
+
+    const audioEl = document.getElementById("audioEl");
+    const coverImg = document.getElementById("coverImg");
+    const songTitleEl = document.getElementById("songTitle");
+    const songSingerEl = document.getElementById("songSinger");
+    const songStatusShort = document.getElementById("songStatusShort");
+    const globalStatusText = document.getElementById("globalStatusText");
+    const lyricsWrap = document.getElementById("lyricsWrap");
+    const lyricsLinkWrap = document.getElementById("lyricsLinkWrap");
+    const langToggleBtn = document.getElementById("langToggleBtn");
+    const toggleLyricsBtn = document.getElementById("toggleLyricsBtn");
+    const downloadMusicBtn = document.getElementById("downloadMusicBtn");
+    const openOriginBtn = document.getElementById("openOriginBtn");
+
+    const appTitleEl = document.getElementById("appTitle");
+    const appSubtitleEl = document.getElementById("appSubtitle");
+    const authorLineEl = document.getElementById("authorLine");
+
+    const vizCanvas = document.getElementById("vizCanvas");
+    const vizCtx = vizCanvas ? vizCanvas.getContext("2d") : null;
+
+    const playlistTitleEl = document.getElementById("playlistTitle");
+    const playlistCountEl = document.getElementById("playlistCount");
+    const playlistListEl = document.getElementById("playlistList");
+    const shortcutsHintEl = document.getElementById("shortcutsHint");
+
+    let currentLang = "zh";
+
+    const langStaticTexts = {
+      zh: {
+        appTitle: "皮卡丘的音乐站",
+        appSubtitle: "搜索 · 播放 · 跟着小皮卡一起摇头",
+        author: "作者：Zhenchao Jin + GPT5",
+        searchPlaceholder: "输入歌名 / 歌手，比如：周杰伦",
+        searchBtn: "搜索一下",
+        searchStatus: (q) => `正在搜索 “${q}” ...`,
+        searchResult: (n) => `搜索到 ${n} 个结果，选一首来听吧～`,
+        searchNoResult: "没有搜索到结果，换个关键词试试？",
+        resultsInitialHint:
+          "⚡ 小提示：先在上面搜索\n比如输入 周杰伦，再点一首歌播放～",
+        lyricsInitialPlaceholder:
+          "🎤 歌词将会在这里出现，并随着播放自动高亮～",
+        lyricsLoading: "正在加载歌词...",
+        lyricsParseFail: "歌词解析失败，可能是空文件。",
+        lyricsNone: "这首歌暂时没有获取到歌词～",
+        lyricsLoadFail: "歌词加载失败，请稍后重试或直接打开歌词文件。",
+        noResultPlaceholder:
+          "暂时没有结果，可以尝试换个歌名 / 歌手再搜一次～",
+        statusInit: "等待搜索，你可以试试输入“周杰伦”。",
+        statusPlaying: (title) => `开始播放：${title}`,
+        statusSearchError: "搜索时出现错误，请稍后重试。",
+        statusSongError: "加载歌曲时出现错误，请稍后重试。",
+        playBtn: "▶ 播放",
+        toggleLyricsBtn: "🎼 显示/隐藏歌词",
+        downloadBtn: "⬇️ 下载音乐",
+        openOriginBtn: "🌐 打开原链接",
+        stateIdle: "闲置中",
+        statePlaying: "播放中",
+        statePaused: "已暂停",
+        stateEnded: "已结束",
+        openLyricsPrefix: "如果歌词无法正常显示，可以打开原始歌词文件：",
+        openLyricsText: "打开原始歌词",
+        playlistTitle: "播放列表",
+        playlistEmpty: "空空如也",
+        playlistCount: (n) => `${n} 首`,
+        shortcutsHint:
+          "键盘快捷键：\nSpace：播放/暂停  ←/→：快退/快进5秒\n↑/↓：音量±5%  P：上一首  N：下一首"
+      },
+      en: {
+        appTitle: "Pikachu Music Station",
+        appSubtitle: "Search · Play · Shake with Pikachu",
+        author: "Author: Zhenchao Jin + GPT5",
+        searchPlaceholder: "Song / artist, e.g. Jay Chou",
+        searchBtn: "Search",
+        searchStatus: (q) => `Searching for “${q}” ...`,
+        searchResult: (n) => `Found ${n} results. Pick one to play!`,
+        searchNoResult: "No results, try another keyword?",
+        resultsInitialHint:
+          "⚡ Tip: search above\nFor example, type Jay Chou and click a song to play.",
+        lyricsInitialPlaceholder:
+          "🎤 Lyrics will appear here and auto-highlight with playback.",
+        lyricsLoading: "Loading lyrics...",
+        lyricsParseFail: "Failed to parse lyrics (file may be empty).",
+        lyricsNone: "No lyrics found for this song.",
+        lyricsLoadFail:
+          "Failed to load lyrics. Please try again later or open the raw file.",
+        noResultPlaceholder:
+          "No results for now. Try a different song / artist.",
+        statusInit: 'Waiting for search. Try typing "Jay Chou".',
+        statusPlaying: (title) => `Now playing: ${title}`,
+        statusSearchError: "Error during search, please try again later.",
+        statusSongError: "Error loading song, please try again later.",
+        playBtn: "▶ Play",
+        toggleLyricsBtn: "🎼 Show / Hide Lyrics",
+        downloadBtn: "⬇️ Download",
+        openOriginBtn: "🌐 Open Original",
+        stateIdle: "Idle",
+        statePlaying: "Playing",
+        statePaused: "Paused",
+        stateEnded: "Ended",
+        openLyricsPrefix:
+          "If lyrics cannot be displayed, open the raw lyrics file:",
+        openLyricsText: "Open raw lyrics",
+        playlistTitle: "Playlist",
+        playlistEmpty: "Empty",
+        playlistCount: (n) => `${n} tracks`,
+        shortcutsHint:
+          "Keyboard shortcuts:\nSpace: play/pause  ←/→: -/+5s\n↑/↓: volume ±5%  P: prev  N: next"
+      }
+    };
+
+    let lastQuery = "";
+    let lrcEntries = [];
+    let currentLyricIndex = -1;
+    let lyricsVisible = true;
+
+    // 播放列表
+    let playlist = []; // { query, apiIndex, title, singer, data? }
+    let currentPlaylistPos = -1;
+
+    // 频谱动画（伪频谱，不动音频通路）
+    let vizAnimationId = null;
+    function startFakeVisualizer() {
+      if (!vizCanvas || !vizCtx) return;
+      if (vizAnimationId) cancelAnimationFrame(vizAnimationId);
+
+      let phase = 0;
+
+      function draw() {
+        vizAnimationId = requestAnimationFrame(draw);
+
+        const rect = vizCanvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        if (
+          vizCanvas.width !== rect.width * dpr ||
+          vizCanvas.height !== rect.height * dpr
+        ) {
+          vizCanvas.width = rect.width * dpr;
+          vizCanvas.height = rect.height * dpr;
+          vizCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        const width = rect.width;
+        const height = rect.height;
+        vizCtx.clearRect(0, 0, width, height);
+
+        const barCount = 40;
+        const barWidth = width / barCount;
+
+        const playing =
+          !audioEl.paused && !audioEl.ended && audioEl.currentTime > 0;
+        phase += playing ? 0.12 : 0.02;
+
+        const base = playing ? 0.2 : 0.05;
+
+        for (let i = 0; i < barCount; i++) {
+          const wave =
+            (Math.sin(phase + i * 0.4) + 1) / 2; // 0~1
+          const noise = Math.random() * 0.4;
+          const v = base + (playing ? wave * 0.5 + noise * 0.2 : wave * 0.1);
+          const barHeight = v * height;
+          const x = i * barWidth;
+          const y = height - barHeight;
+          const alpha = 0.3 + 0.7 * v;
+
+          vizCtx.fillStyle = "rgba(255,234,167," + alpha + ")";
+          if (vizCtx.roundRect) {
+            vizCtx.beginPath();
+            vizCtx.roundRect(x + 1, y, barWidth - 2, barHeight, 4);
+            vizCtx.fill();
+          } else {
+            vizCtx.fillRect(x + 1, y, barWidth - 2, barHeight);
+          }
         }
       }
 
-      function parseSearchResultText(text) {
-        const lines = text
-          .split("\n")
-          .map((l) => l.trim())
-          .filter((l) => l && /^\d+\./.test(l));
-        const list = [];
-        for (const line of lines) {
-          const parts = line.split(" -- ");
-          if (parts.length < 2) continue;
-          const left = parts[0].trim();
-          const singer = parts.slice(1).join(" -- ").trim();
-          const idxMatch = left.match(/^(\d+)\.(.+)$/);
-          if (!idxMatch) continue;
-          const index = parseInt(idxMatch[1], 10);
-          const title = idxMatch[2].trim();
-          list.push({ index, title, singer });
-        }
-        return list;
-      }
+      draw();
+    }
 
-      function renderResultList(list) {
-        const t = langStaticTexts[currentLang];
-        resultsEl.innerHTML = "";
+    window.addEventListener("resize", () => {
+      if (!vizCanvas || !vizCtx) return;
+      const rect = vizCanvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      vizCanvas.width = rect.width * dpr;
+      vizCanvas.height = rect.height * dpr;
+      vizCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    });
+
+    // 初始化 viz 尺寸并启动
+    if (vizCanvas && vizCtx) {
+      const rect = vizCanvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      vizCanvas.width = rect.width * dpr;
+      vizCanvas.height = rect.height * dpr;
+      vizCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      startFakeVisualizer();
+    }
+
+    function setStatus(text, kind) {
+      globalStatusText.textContent = text;
+      if (kind) {
+        globalStatusText.dataset.kind = kind;
+      }
+    }
+
+    function renderInitialResultsHint() {
+      resultsEl.innerHTML = "";
+      const hint = langStaticTexts[currentLang].resultsInitialHint;
+      const div = document.createElement("div");
+      div.className = "lyrics-placeholder";
+      div.innerHTML = hint.replace(/\n/g, "<br/>");
+      resultsEl.appendChild(div);
+    }
+
+    function showLyricsPlaceholder(text) {
+      lyricsWrap.innerHTML = "";
+      const div = document.createElement("div");
+      div.className = "lyrics-placeholder";
+      div.textContent = text;
+      lyricsWrap.appendChild(div);
+      if (lyricsLinkWrap) {
+        lyricsLinkWrap.innerHTML = "";
+      }
+    }
+
+    function showRawLyricsLink(url) {
+      if (!lyricsLinkWrap) return;
+      const t = langStaticTexts[currentLang];
+      lyricsLinkWrap.innerHTML = "";
+
+      const info = document.createElement("span");
+      info.textContent = t.openLyricsPrefix;
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener";
+      link.style.marginLeft = "4px";
+      link.style.color = "#74b9ff";
+      link.style.textDecoration = "underline";
+      link.textContent = t.openLyricsText;
+
+      lyricsLinkWrap.appendChild(info);
+      lyricsLinkWrap.appendChild(link);
+    }
+
+    function applyLanguage() {
+      const t = langStaticTexts[currentLang];
+      appTitleEl.textContent = t.appTitle;
+      appSubtitleEl.textContent = t.appSubtitle;
+      authorLineEl.textContent = t.author;
+      searchInput.placeholder = t.searchPlaceholder;
+      searchBtn.innerHTML = t.searchBtn + "<span>⚡</span>";
+      toggleLyricsBtn.textContent = t.toggleLyricsBtn;
+      downloadMusicBtn.textContent = t.downloadBtn;
+      openOriginBtn.textContent = t.openOriginBtn;
+      songStatusShort.textContent = t.stateIdle;
+      langToggleBtn.textContent =
+        currentLang === "zh" ? "中 / EN" : "EN / 中";
+
+      playlistTitleEl.textContent = t.playlistTitle;
+      playlistCountEl.textContent = playlist.length
+        ? t.playlistCount(playlist.length)
+        : t.playlistEmpty;
+
+      shortcutsHintEl.innerHTML = t.shortcutsHint.replace(/\n/g, "<br/>");
+
+      if (!resultsEl.hasChildNodes()) {
+        renderInitialResultsHint();
+      }
+      if (!lrcEntries.length) {
+        showLyricsPlaceholder(t.lyricsInitialPlaceholder);
+      }
+      if (globalStatusText.dataset.kind === "init") {
+        setStatus(t.statusInit, "init");
+      }
+    }
+
+    langToggleBtn.addEventListener("click", () => {
+      currentLang = currentLang === "zh" ? "en" : "zh";
+      applyLanguage();
+      playlistCountEl.textContent = playlist.length
+        ? langStaticTexts[currentLang].playlistCount(playlist.length)
+        : langStaticTexts[currentLang].playlistEmpty;
+    });
+
+    // 搜索
+    searchForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const q = searchInput.value.trim();
+      if (!q) return;
+      lastQuery = q;
+      currentLyricIndex = -1;
+      lrcEntries = [];
+      const t = langStaticTexts[currentLang];
+      setStatus(t.searchStatus(q));
+      searchSongs(q);
+    });
+
+    async function searchSongs(query) {
+      const t = langStaticTexts[currentLang];
+      try {
+        const url =
+          API_BASE +
+          "?msg=" +
+          encodeURIComponent(query) +
+          "&type=json";
+        const resp = await fetch(url);
+        const text = await resp.text();
+        const list = parseSearchResultText(text);
+        renderResultList(list, query);
         if (!list.length) {
-          const div = document.createElement("div");
-          div.className = "lyrics-placeholder";
-          div.textContent = t.noResultPlaceholder;
-          resultsEl.appendChild(div);
-          return;
+          setStatus(t.searchNoResult);
+        } else {
+          setStatus(t.searchResult(list.length));
         }
+      } catch (err) {
+        console.error(err);
+        renderResultList([], query);
+        setStatus(t.statusSearchError);
+      }
+    }
 
-        list.forEach((item) => {
-          const row = document.createElement("div");
-          row.className = "result-item";
-          row.dataset.index = String(item.index);
+    function parseSearchResultText(text) {
+      const lines = text
+        .split("\n")
+        .map((l) => l.trim())
+        .filter((l) => l && /^\d+\./.test(l));
+      const list = [];
+      for (const line of lines) {
+        const parts = line.split(" -- ");
+        if (parts.length < 2) continue;
+        const left = parts[0].trim();
+        const singer = parts.slice(1).join(" -- ").trim();
+        const idxMatch = left.match(/^(\d+)\.(.+)$/);
+        if (!idxMatch) continue;
+        const index = parseInt(idxMatch[1], 10);
+        const title = idxMatch[2].trim();
+        list.push({ index, title, singer });
+      }
+      return list;
+    }
 
-          const main = document.createElement("div");
-          main.className = "result-main";
-
-          const idxEl = document.createElement("div");
-          idxEl.className = "result-index";
-          idxEl.textContent = item.index + ".";
-
-          const titleEl = document.createElement("div");
-          titleEl.className = "result-title";
-          titleEl.textContent = item.title;
-
-          const singerEl = document.createElement("div");
-          singerEl.className = "result-singer";
-          singerEl.textContent = "— " + item.singer;
-
-          main.appendChild(idxEl);
-          main.appendChild(titleEl);
-          main.appendChild(singerEl);
-
-          const actions = document.createElement("div");
-          actions.className = "result-actions";
-
-          const playBtn = document.createElement("button");
-          playBtn.type = "button";
-          playBtn.className = "pill-btn";
-          playBtn.innerHTML = t.playBtn;
-          playBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            selectSong(item.index);
-          });
-
-          actions.appendChild(playBtn);
-          row.appendChild(main);
-          row.appendChild(actions);
-
-          row.addEventListener("click", () => {
-            selectSong(item.index);
-          });
-
-          resultsEl.appendChild(row);
-        });
+    function renderResultList(list, queryForItems) {
+      const t = langStaticTexts[currentLang];
+      resultsEl.innerHTML = "";
+      if (!list.length) {
+        const div = document.createElement("div");
+        div.className = "lyrics-placeholder";
+        div.textContent = t.noResultPlaceholder;
+        resultsEl.appendChild(div);
+        return;
       }
 
-      function highlightActiveResult(index) {
-        const rows = resultsEl.querySelectorAll(".result-item");
-        rows.forEach((row) => {
-          row.classList.toggle(
-            "active",
-            row.dataset.index === String(index)
-          );
+      list.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "result-item";
+        row.dataset.index = String(item.index);
+
+        const main = document.createElement("div");
+        main.className = "result-main";
+
+        const idxEl = document.createElement("div");
+        idxEl.className = "result-index";
+        idxEl.textContent = item.index + ".";
+
+        const titleEl = document.createElement("div");
+        titleEl.className = "result-title";
+        titleEl.textContent = item.title;
+
+        const singerEl = document.createElement("div");
+        singerEl.className = "result-singer";
+        singerEl.textContent = "— " + item.singer;
+
+        main.appendChild(idxEl);
+        main.appendChild(titleEl);
+        main.appendChild(singerEl);
+
+        const actions = document.createElement("div");
+        actions.className = "result-actions";
+
+        const payload = {
+          query: queryForItems,
+          apiIndex: item.index,
+          title: item.title,
+          singer: item.singer
+        };
+
+        const playBtn = document.createElement("button");
+        playBtn.type = "button";
+        playBtn.className = "pill-btn";
+        playBtn.innerHTML = t.playBtn;
+        playBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          playSong(payload, { fromSearch: true });
         });
+
+        actions.appendChild(playBtn);
+        row.appendChild(main);
+        row.appendChild(actions);
+
+        row.addEventListener("click", () => {
+          playSong(payload, { fromSearch: true });
+        });
+
+        resultsEl.appendChild(row);
+      });
+    }
+
+    function highlightActiveResult(index) {
+      const rows = resultsEl.querySelectorAll(".result-item");
+      rows.forEach((row) => {
+        row.classList.toggle(
+          "active",
+          index != null && row.dataset.index === String(index)
+        );
+      });
+    }
+
+    function renderPlaylist() {
+      const t = langStaticTexts[currentLang];
+      playlistListEl.innerHTML = "";
+      playlist.forEach((p, idx) => {
+        const row = document.createElement("div");
+        row.className = "playlist-item";
+        if (idx === currentPlaylistPos) row.classList.add("active");
+
+        const idxEl = document.createElement("div");
+        idxEl.className = "playlist-index";
+        idxEl.textContent = idx + 1;
+
+        const main = document.createElement("div");
+        main.className = "playlist-main";
+
+        const titleEl = document.createElement("div");
+        titleEl.className = "playlist-title";
+        titleEl.textContent = p.title || "Unknown";
+
+        const singerEl = document.createElement("div");
+        singerEl.className = "playlist-singer";
+        singerEl.textContent = p.singer || "";
+
+        main.appendChild(titleEl);
+        main.appendChild(singerEl);
+
+        const badge = document.createElement("div");
+        badge.className = "playlist-badge";
+        badge.textContent = idx === currentPlaylistPos ? "▶" : "";
+
+        row.appendChild(idxEl);
+        row.appendChild(main);
+        row.appendChild(badge);
+
+        row.addEventListener("click", () => {
+          playFromPlaylist(idx);
+        });
+
+        playlistListEl.appendChild(row);
+      });
+
+      playlistCountEl.textContent = playlist.length
+        ? t.playlistCount(playlist.length)
+        : t.playlistEmpty;
+    }
+
+    async function playSong(item, options) {
+      const opts = options || {};
+      const t = langStaticTexts[currentLang];
+      lastQuery = item.query;
+
+      let pos = playlist.findIndex(
+        (p) => p.query === item.query && p.apiIndex === item.apiIndex
+      );
+      if (pos === -1) {
+        playlist.push(item);
+        pos = playlist.length - 1;
+      }
+      currentPlaylistPos = pos;
+      renderPlaylist();
+
+      if (opts.fromSearch) {
+        highlightActiveResult(item.apiIndex);
       }
 
-      async function selectSong(index) {
-        if (!lastQuery) return;
-        currentIndex = index;
-        highlightActiveResult(index);
-        const t = langStaticTexts[currentLang];
-        setStatus(t.searchStatus(lastQuery));
-        try {
+      setStatus(t.searchStatus(item.query));
+      try {
+        let data = item.data;
+        if (!data) {
           const url =
             API_BASE +
             "?msg=" +
-            encodeURIComponent(lastQuery) +
+            encodeURIComponent(item.query) +
             "&type=json&n=" +
-            index;
+            item.apiIndex;
           const resp = await fetch(url);
           const json = await resp.json();
           if (json.code !== 200 || !json.data) {
@@ -1173,190 +1467,260 @@
             setStatus(t.statusSongError + (msg ? " " + msg : ""));
             return;
           }
-          const data = json.data;
-          updateNowPlaying(data);
-          setStatus(t.statusPlaying(data.title));
-          audioEl.play().catch(() => {});
-          if (data.lrc_url) {
-            showLyricsPlaceholder(t.lyricsLoading);
-            loadLyrics(data.lrc_url);
-          } else {
-            showLyricsPlaceholder(t.lyricsNone);
-          }
-        } catch (err) {
-          console.error(err);
-          setStatus(langStaticTexts[currentLang].statusSongError);
+          data = json.data;
+          item.data = data;
+          playlist[pos].data = data;
         }
+
+        updateNowPlaying(data);
+        setStatus(t.statusPlaying(data.title));
+        audioEl.play().catch(() => {});
+        if (data.lrc_url) {
+          showLyricsPlaceholder(t.lyricsLoading);
+          loadLyrics(data.lrc_url);
+        } else {
+          showLyricsPlaceholder(t.lyricsNone);
+        }
+      } catch (err) {
+        console.error(err);
+        setStatus(t.statusSongError);
+      }
+    }
+
+    function playFromPlaylist(idx) {
+      if (idx < 0 || idx >= playlist.length) return;
+      currentPlaylistPos = idx;
+      renderPlaylist();
+      const item = playlist[idx];
+      playSong(item, { fromPlaylist: true });
+    }
+
+    function playNextInPlaylist() {
+      if (!playlist.length) return;
+      let next = currentPlaylistPos + 1;
+      if (next >= playlist.length) return;
+      playFromPlaylist(next);
+    }
+
+    function playPrevInPlaylist() {
+      if (!playlist.length) return;
+      let prev = currentPlaylistPos - 1;
+      if (prev < 0) return;
+      playFromPlaylist(prev);
+    }
+
+    function updateNowPlaying(data) {
+      const t = langStaticTexts[currentLang];
+      songTitleEl.textContent = data.title || "Unknown";
+      songSingerEl.textContent = data.singer || "Unknown";
+      songStatusShort.textContent = t.statePlaying;
+
+      if (data.cover) {
+        coverImg.src = data.cover;
       }
 
-      function updateNowPlaying(data) {
-        const t = langStaticTexts[currentLang];
-        songTitleEl.textContent = data.title || "Unknown";
-        songSingerEl.textContent = data.singer || "Unknown";
-        songStatusShort.textContent = t.statePlaying;
+      if (data.music_url) {
+        audioEl.src = data.music_url;
+        downloadMusicBtn.href = data.music_url;
+        downloadMusicBtn.download =
+          (data.title || "music") + ".mp3";
+      } else {
+        audioEl.removeAttribute("src");
+        downloadMusicBtn.href = "#";
+      }
 
-        if (data.cover) {
-          coverImg.src = data.cover;
-        }
+      if (data.link) {
+        openOriginBtn.href = data.link;
+      } else {
+        openOriginBtn.href = "#";
+      }
 
-        if (data.music_url) {
-          audioEl.src = data.music_url;
-          downloadMusicBtn.href = data.music_url;
-          downloadMusicBtn.download =
-            (data.title || "music") + ".mp3";
-        } else {
-          audioEl.removeAttribute("src");
-          downloadMusicBtn.href = "#";
-        }
+      lrcEntries = [];
+      currentLyricIndex = -1;
+      if (lyricsLinkWrap) {
+        lyricsLinkWrap.innerHTML = "";
+      }
+    }
 
-        if (data.link) {
-          openOriginBtn.href = data.link;
-        } else {
-          openOriginBtn.href = "#";
-        }
-
-        lrcEntries = [];
+    async function loadLyrics(url) {
+      const t = langStaticTexts[currentLang];
+      try {
+        const resp = await fetch(url);
+        const text = await resp.text();
+        const entries = parseLRC(text);
+        lrcEntries = entries;
         currentLyricIndex = -1;
-        if (lyricsLinkWrap) {
-          lyricsLinkWrap.innerHTML = "";
-        }
-      }
 
-      async function loadLyrics(url) {
-        const t = langStaticTexts[currentLang];
-        try {
-          const resp = await fetch(url);
-          const text = await resp.text();
-          const entries = parseLRC(text);
-          lrcEntries = entries;
-          currentLyricIndex = -1;
-
-          if (!entries.length) {
-            showLyricsPlaceholder(t.lyricsParseFail);
-            showRawLyricsLink(url);
-            return;
-          }
-
-          renderLyrics(entries);
-        } catch (err) {
-          console.error(err);
-          showLyricsPlaceholder(t.lyricsLoadFail);
+        if (!entries.length) {
+          showLyricsPlaceholder(t.lyricsParseFail);
           showRawLyricsLink(url);
-        }
-      }
-
-      function parseLRC(raw) {
-        const lines = raw.split("\n");
-        const result = [];
-        const timeTagRegex = /\[(\d+):(\d+(?:\.\d+)?)\]/g;
-
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed) continue;
-
-          let match;
-          const timeTags = [];
-          while ((match = timeTagRegex.exec(trimmed))) {
-            const min = parseInt(match[1], 10);
-            const sec = parseFloat(match[2]);
-            const time = min * 60 + sec;
-            timeTags.push(time);
-          }
-
-          const text = trimmed.replace(timeTagRegex, "").trim();
-          if (!timeTags.length || !text) continue;
-
-          timeTags.forEach((t) => {
-            result.push({ time: t, text });
-          });
+          return;
         }
 
-        result.sort((a, b) => a.time - b.time);
-        return result;
+        renderLyrics(entries);
+      } catch (err) {
+        console.error(err);
+        showLyricsPlaceholder(t.lyricsLoadFail);
+        showRawLyricsLink(url);
       }
+    }
 
-      function renderLyrics(entries) {
-        lyricsWrap.innerHTML = "";
-        entries.forEach((entry, idx) => {
-          const lineEl = document.createElement("div");
-          lineEl.className = "lyric-line";
-          lineEl.dataset.index = String(idx);
-          lineEl.dataset.time = String(entry.time);
-          lineEl.textContent = entry.text;
-          lyricsWrap.appendChild(lineEl);
+    function parseLRC(raw) {
+      const lines = raw.split("\n");
+      const result = [];
+      const timeTagRegex = /\[(\d+):(\d+(?:\.\d+)?)\]/g;
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+
+        let match;
+        const timeTags = [];
+        while ((match = timeTagRegex.exec(trimmed))) {
+          const min = parseInt(match[1], 10);
+          const sec = parseFloat(match[2]);
+          const time = min * 60 + sec;
+          timeTags.push(time);
+        }
+
+        const text = trimmed.replace(timeTagRegex, "").trim();
+        if (!timeTags.length || !text) continue;
+
+        timeTags.forEach((t) => {
+          result.push({ time: t, text: text });
         });
-        if (lyricsLinkWrap) {
-          lyricsLinkWrap.innerHTML = "";
-        }
       }
 
-      audioEl.addEventListener("timeupdate", () => {
-        if (!lrcEntries.length) return;
-        const currentTime = audioEl.currentTime;
+      result.sort((a, b) => a.time - b.time);
+      return result;
+    }
 
-        let idx = currentLyricIndex;
-        if (idx < 0 || currentTime < lrcEntries[idx].time) {
-          idx = 0;
-        }
-        while (
-          idx + 1 < lrcEntries.length &&
-          lrcEntries[idx + 1].time <= currentTime + 0.15
-        ) {
-          idx++;
-        }
-        if (idx !== currentLyricIndex) {
-          currentLyricIndex = idx;
-          updateActiveLyricLine(idx);
-        }
+    function renderLyrics(entries) {
+      lyricsWrap.innerHTML = "";
+      entries.forEach((entry, idx) => {
+        const lineEl = document.createElement("div");
+        lineEl.className = "lyric-line";
+        lineEl.dataset.index = String(idx);
+        lineEl.dataset.time = String(entry.time);
+        lineEl.textContent = entry.text;
+        lyricsWrap.appendChild(lineEl);
       });
-
-      function updateActiveLyricLine(idx) {
-        const lines = lyricsWrap.querySelectorAll(".lyric-line");
-        lines.forEach((el) => {
-          const lineIdx = parseInt(el.dataset.index, 10);
-          el.classList.toggle("active", lineIdx === idx);
-        });
-
-        const activeEl = lyricsWrap.querySelector(
-          '.lyric-line[data-index="' + idx + '"]'
-        );
-        if (activeEl) {
-          activeEl.scrollIntoView({
-            behavior: "smooth",
-            block: "center",
-          });
-        }
+      if (lyricsLinkWrap) {
+        lyricsLinkWrap.innerHTML = "";
       }
+    }
 
-      audioEl.addEventListener("play", () => {
-        songStatusShort.textContent =
-          langStaticTexts[currentLang].statePlaying;
-      });
-      audioEl.addEventListener("pause", () => {
-        songStatusShort.textContent =
-          langStaticTexts[currentLang].statePaused;
-      });
-      audioEl.addEventListener("ended", () => {
-        songStatusShort.textContent =
-          langStaticTexts[currentLang].stateEnded;
+    audioEl.addEventListener("timeupdate", () => {
+      if (!lrcEntries.length) return;
+      const currentTime = audioEl.currentTime;
+
+      let idx = currentLyricIndex;
+      if (idx < 0 || currentTime < lrcEntries[idx].time) {
+        idx = 0;
+      }
+      while (
+        idx + 1 < lrcEntries.length &&
+        lrcEntries[idx + 1].time <= currentTime + 0.15
+      ) {
+        idx++;
+      }
+      if (idx !== currentLyricIndex) {
+        currentLyricIndex = idx;
+        updateActiveLyricLine(idx);
+      }
+    });
+
+    function updateActiveLyricLine(idx) {
+      const lines = lyricsWrap.querySelectorAll(".lyric-line");
+      lines.forEach((el) => {
+        const lineIdx = parseInt(el.dataset.index, 10);
+        el.classList.toggle("active", lineIdx === idx);
       });
 
-      toggleLyricsBtn.addEventListener("click", () => {
-        lyricsVisible = !lyricsVisible;
-        lyricsWrap.style.display = lyricsVisible ? "block" : "none";
-        if (lyricsLinkWrap) {
-          lyricsLinkWrap.style.display = lyricsVisible ? "block" : "none";
-        }
-      });
-
-      // 初始状态
-      renderInitialResultsHint();
-      showLyricsPlaceholder(
-        langStaticTexts[currentLang].lyricsInitialPlaceholder
+      const activeEl = lyricsWrap.querySelector(
+        '.lyric-line[data-index="' + idx + '"]'
       );
-      setStatus(langStaticTexts[currentLang].statusInit, "init");
-      applyLanguage();
-    })();
-  </script>
+      if (activeEl) {
+        activeEl.scrollIntoView({
+          behavior: "smooth",
+          block: "center"
+        });
+      }
+    }
+
+    audioEl.addEventListener("play", () => {
+      const t = langStaticTexts[currentLang];
+      songStatusShort.textContent = t.statePlaying;
+    });
+
+    audioEl.addEventListener("pause", () => {
+      const t = langStaticTexts[currentLang];
+      songStatusShort.textContent = t.statePaused;
+    });
+
+    audioEl.addEventListener("ended", () => {
+      const t = langStaticTexts[currentLang];
+      songStatusShort.textContent = t.stateEnded;
+      playNextInPlaylist();
+    });
+
+    toggleLyricsBtn.addEventListener("click", () => {
+      lyricsVisible = !lyricsVisible;
+      lyricsWrap.style.display = lyricsVisible ? "block" : "none";
+      if (lyricsLinkWrap) {
+        lyricsLinkWrap.style.display = lyricsVisible ? "block" : "none";
+      }
+    });
+
+    function togglePlayPause() {
+      if (!audioEl.src) return;
+      if (audioEl.paused) {
+        audioEl.play().catch(() => {});
+      } else {
+        audioEl.pause();
+      }
+    }
+
+    // 键盘快捷键
+    window.addEventListener("keydown", (e) => {
+      const tag = (e.target.tagName || "").toLowerCase();
+      if (tag === "input" || tag === "textarea" || e.target.isContentEditable) {
+        return;
+      }
+
+      if (e.code === "Space") {
+        e.preventDefault();
+        togglePlayPause();
+      } else if (e.code === "ArrowRight") {
+        if (!isNaN(audioEl.duration)) {
+          audioEl.currentTime = Math.min(
+            audioEl.duration,
+            audioEl.currentTime + 5
+          );
+        }
+      } else if (e.code === "ArrowLeft") {
+        audioEl.currentTime = Math.max(0, audioEl.currentTime - 5);
+      } else if (e.code === "ArrowUp") {
+        e.preventDefault();
+        audioEl.volume = Math.min(1, audioEl.volume + 0.05);
+      } else if (e.code === "ArrowDown") {
+        e.preventDefault();
+        audioEl.volume = Math.max(0, audioEl.volume - 0.05);
+      } else if (e.key === "n" || e.key === "N") {
+        playNextInPlaylist();
+      } else if (e.key === "p" || e.key === "P") {
+        playPrevInPlaylist();
+      }
+    });
+
+    // 初始状态
+    renderInitialResultsHint();
+    showLyricsPlaceholder(
+      langStaticTexts[currentLang].lyricsInitialPlaceholder
+    );
+    setStatus(langStaticTexts[currentLang].statusInit, "init");
+    applyLanguage();
+  })();
+</script>
 </body>
 </html>
