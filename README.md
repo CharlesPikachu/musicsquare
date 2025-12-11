@@ -14,7 +14,7 @@ This GitHub Pages deployment is available at:
   Supports searching songs by keyword and playing them directly in the browser.
 
 - 📻 **Multiple music sources**  
-  Integrates online platforms such as migu and netease.
+  Integrates online platforms such as Migu, Netease, TIDAL，Apple Music，Spotify，Qobuz.
 
 - 💛 **Cute & simple UI**  
   A clean, playful interface themed around Pikachu and casual music listening.
@@ -35,7 +35,7 @@ This GitHub Pages deployment is available at:
 - This site is hosted via **GitHub Pages**.
 - You can customize:
   - Theme (colors, background, icons)
-  - API endpoints (e.g., your own proxy/bridge server for migu / netease)
+  - API endpoints (e.g., your own proxy/bridge server for Migu, Netease, TIDAL，Apple Music，Spotify，Qobuz.)
   - Player behavior (autoplay, playlist, lyrics panel, etc.)
 
 For more details, check the source files in this repository and adjust the HTML / CSS / JavaScript as needed.

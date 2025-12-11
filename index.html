@@ -33,7 +33,7 @@
       min-height: 100vh;
       padding: 24px;
       display: flex;
-      align-items: flex-start; /* 顶部对齐，避免整体被挤出屏幕 */
+      align-items: flex-start;
       justify-content: center;
     }
 
@@ -54,7 +54,7 @@
       position: relative;
       max-height: calc(100vh - 48px);
       overflow-x: hidden;
-      overflow-y: auto; /* 内部滚动，避免内容被裁掉 */
+      overflow-y: auto;
     }
 
     .floating-animal {
@@ -231,7 +231,6 @@
       opacity: 0.9;
     }
 
-    /* 搜索来源筛选 */
     .source-filter {
       display: flex;
       align-items: center;
@@ -361,6 +360,18 @@
     }
     .source-chip-netease .source-chip-dot {
       background: linear-gradient(135deg, #ff7675, #d63031);
+    }
+    .source-chip-spotify .source-chip-dot {
+      background: linear-gradient(135deg, #1db954, #1ed760);
+    }
+    .source-chip-apple .source-chip-dot {
+      background: linear-gradient(135deg, #fa233b, #fb5c74);
+    }
+    .source-chip-tidal .source-chip-dot {
+      background: linear-gradient(135deg, #00ffff, #0088ff);
+    }
+    .source-chip-qobuz .source-chip-dot {
+      background: linear-gradient(135deg, #00a1e4, #005f8f);
     }
 
     .result-actions {
@@ -496,6 +507,18 @@
     .source-mixed {
       background: linear-gradient(135deg, #fdcb6e, #ff7675);
     }
+    .source-spotify {
+      background: linear-gradient(135deg, #1db954, #1ed760);
+    }
+    .source-apple {
+      background: linear-gradient(135deg, #fa233b, #fb5c74);
+    }
+    .source-tidal {
+      background: linear-gradient(135deg, #00ffff, #0088ff);
+    }
+    .source-qobuz {
+      background: linear-gradient(135deg, #00a1e4, #005f8f);
+    }
 
     .player-controls {
       display: flex;
@@ -503,12 +526,10 @@
       gap: 6px;
     }
 
-    /* 隐藏原生 audio 控件，只用来播放声音 */
     #audioEl {
       display: none;
     }
 
-    /* ▶ 自定义玻璃风进度条 */
     .progress-container {
       margin-top: 4px;
       display: flex;
@@ -619,7 +640,7 @@
       border-radius: 12px;
       border: 1px solid rgba(174, 207, 255, 0.18);
       padding: 6px 8px;
-      max-height: 100px;   /* 略微缩小播放列表高度 */
+      max-height: 100px;
       overflow-y: auto;
       flex: 0 0 auto;
     }
@@ -699,7 +720,7 @@
       padding: 6px 8px;
       border: 1px solid rgba(174, 207, 255, 0.18);
       overflow-y: auto;
-      max-height: 72px;     /* 歌词显示区域缩小，整体高度更矮 */
+      max-height: 72px;
       scrollbar-width: thin;
       scrollbar-color: rgba(116, 185, 255, 0.7) transparent;
       font-size: 12px;
@@ -758,7 +779,7 @@
       .card {
         grid-template-columns: 1fr;
         padding: 16px;
-        max-height: none;      /* 小屏下交给页面整体滚动 */
+        max-height: none;
         height: auto;
         overflow-y: visible;
       }
@@ -817,6 +838,7 @@
         <!-- 搜索来源筛选 -->
         <div class="source-filter">
           <span id="sourceFilterLabel" class="source-filter-label">搜索来源：</span>
+
           <label class="source-filter-option">
             <input type="checkbox" id="sourceMiguCheckbox" checked />
             <span id="sourceFilterMiguText">咪咕音乐</span>
@@ -825,10 +847,28 @@
             <input type="checkbox" id="sourceNeteaseCheckbox" checked />
             <span id="sourceFilterNeteaseText">网易云音乐</span>
           </label>
+
+          <!-- 新增四个源 -->
+          <label class="source-filter-option">
+            <input type="checkbox" id="sourceSpotifyCheckbox" checked />
+            <span id="sourceFilterSpotifyText">Spotify</span>
+          </label>
+          <label class="source-filter-option">
+            <input type="checkbox" id="sourceAppleCheckbox" checked />
+            <span id="sourceFilterAppleText">Apple Music</span>
+          </label>
+          <label class="source-filter-option">
+            <input type="checkbox" id="sourceTidalCheckbox" checked />
+            <span id="sourceFilterTidalText">Tidal</span>
+          </label>
+          <label class="source-filter-option">
+            <input type="checkbox" id="sourceQobuzCheckbox" checked />
+            <span id="sourceFilterQobuzText">Qobuz</span>
+          </label>
         </div>
 
         <div id="sourceSummary" class="source-summary-line">
-          当前来源：咪咕音乐 + 网易云音乐
+          当前来源：咪咕音乐 + 网易云音乐 + Spotify + Apple Music + Tidal + Qobuz
         </div>
 
         <div id="results" class="results"></div>
@@ -863,10 +903,8 @@
           </div>
 
           <div class="player-controls">
-            <!-- 隐藏的原生 audio，只负责播放 -->
             <audio id="audioEl" preload="none"></audio>
 
-            <!-- 自定义进度条 -->
             <div class="progress-container">
               <div id="musicProgressBar" class="progress-bar">
                 <div id="musicProgressFill" class="progress-fill"></div>
@@ -883,7 +921,6 @@
                 <button id="toggleLyricsBtn" type="button" class="link-btn">
                   🎼 显示/隐藏歌词
                 </button>
-                <!-- 播放模式按钮 -->
                 <button id="playModeBtn" type="button" class="link-btn">
                   🔁 顺序
                 </button>
@@ -1109,13 +1146,32 @@
     requestAnimationFrame(animate);
   })();
 
-  // 音乐逻辑：咪咕 + 网易云 双源 + 搜索来源筛选
+  // ============================ 音乐逻辑 ============================
   (function () {
+    // 旧 API
     const API_MIGU = "https://api.cenguigui.cn/api/mg_music/";
     const API_NETEASE_SEARCH = "https://api.cenguigui.cn/api/music/netease/WyY_Dg.php";
     const API_NETEASE_DETAIL = "https://api.cenguigui.cn/api/netease/music_v1.php";
 
-    const NETEASE_LIMIT = 20;
+    // GDStudio 相关：新四个源
+    const GDS_SITE_TO_API = {
+      spotify: "https://music.gdstudio.xyz/api.php",
+      tencent: "https://music.gdstudio.xyz/api.php",
+      netease: "https://music.gdstudio.xyz/api.php",
+      kuwo: "https://music.gdstudio.xyz/api.php",
+      tidal: "https://music.gdstudio.xyz/api.php",
+      apple: "https://music.gdstudio.xyz/api.php",
+      migu: "https://music-api-cn.gdstudio.xyz/api.php",
+      kugou: "https://music-api-cn.gdstudio.xyz/api.php",
+      ximalaya: "https://music-api-cn.gdstudio.xyz/api.php",
+      joox: "https://music-api-hk.gdstudio.xyz/api.php",
+      qobuz: "https://music-api-us.gdstudio.xyz/api.php",
+      ytmusic: "https://music-api-us.gdstudio.xyz/api.php",
+      bilibili: "https://music.gdstudio.xyz/api.php"
+    };
+
+    const NETEASE_LIMIT = 5;           // 网易云 5 条
+    const PER_SOURCE_LIMIT = 5;        // 每个源 5 条
 
     const searchForm = document.getElementById("searchForm");
     const searchInput = document.getElementById("searchInput");
@@ -1125,9 +1181,18 @@
 
     const sourceMiguCheckbox = document.getElementById("sourceMiguCheckbox");
     const sourceNeteaseCheckbox = document.getElementById("sourceNeteaseCheckbox");
+    const sourceSpotifyCheckbox = document.getElementById("sourceSpotifyCheckbox");
+    const sourceAppleCheckbox   = document.getElementById("sourceAppleCheckbox");
+    const sourceTidalCheckbox   = document.getElementById("sourceTidalCheckbox");
+    const sourceQobuzCheckbox   = document.getElementById("sourceQobuzCheckbox");
+
     const sourceFilterLabelEl = document.getElementById("sourceFilterLabel");
     const sourceFilterMiguTextEl = document.getElementById("sourceFilterMiguText");
     const sourceFilterNeteaseTextEl = document.getElementById("sourceFilterNeteaseText");
+    const sourceFilterSpotifyTextEl = document.getElementById("sourceFilterSpotifyText");
+    const sourceFilterAppleTextEl   = document.getElementById("sourceFilterAppleText");
+    const sourceFilterTidalTextEl   = document.getElementById("sourceFilterTidalText");
+    const sourceFilterQobuzTextEl   = document.getElementById("sourceFilterQobuzText");
 
     const audioEl = document.getElementById("audioEl");
     const coverImg = document.getElementById("coverImg");
@@ -1157,7 +1222,6 @@
     const playlistListEl = document.getElementById("playlistList");
     const shortcutsHintEl = document.getElementById("shortcutsHint");
 
-    // 自定义进度条元素
     const progressBarEl = document.getElementById("musicProgressBar");
     const progressFillEl = document.getElementById("musicProgressFill");
     const currentTimeLabelEl = document.getElementById("currentTimeLabel");
@@ -1165,7 +1229,6 @@
     if (currentTimeLabelEl) currentTimeLabelEl.textContent = "00:00";
     if (durationLabelEl) durationLabelEl.textContent = "00:00";
 
-    // 播放模式：顺序 / 列表循环 / 单曲循环
     const PLAY_MODE_SEQUENCE = "sequence";
     const PLAY_MODE_LOOP_ALL = "loop_all";
     const PLAY_MODE_SINGLE = "single";
@@ -1216,14 +1279,17 @@
         nowPlayingIdleSinger: "小皮卡说：先来一首试试？",
         sourceLabelMigu: "咪咕音乐",
         sourceLabelNetease: "网易云音乐",
-        sourceLabelBoth: (a, b) => `${a} + ${b}`,
+        sourceLabelSpotify: "Spotify",
+        sourceLabelApple: "Apple Music",
+        sourceLabelTidal: "Tidal",
+        sourceLabelQobuz: "Qobuz",
         sourceFilterLabel: "搜索来源：",
         sourceFilterMigu: "咪咕音乐",
         sourceFilterNetease: "网易云音乐",
-        sourceSummaryNone: "当前来源：暂无",
-        sourceSummaryMigu: (a) => `当前来源：${a}`,
-        sourceSummaryNetease: (b) => `当前来源：${b}`,
-        sourceSummaryBoth: (a, b) => `当前来源：${a} + ${b}`,
+        sourceFilterSpotify: "Spotify",
+        sourceFilterApple: "Apple Music",
+        sourceFilterTidal: "Tidal",
+        sourceFilterQobuz: "Qobuz",
         playModeSequence: "顺序播放",
         playModeLoopAll: "列表循环",
         playModeSingle: "单曲循环",
@@ -1275,14 +1341,17 @@
         nowPlayingIdleSinger: "Pikachu says: pick something to play!",
         sourceLabelMigu: "MiGu Music",
         sourceLabelNetease: "NetEase Cloud",
-        sourceLabelBoth: (a, b) => `${a} + ${b}`,
+        sourceLabelSpotify: "Spotify",
+        sourceLabelApple: "Apple Music",
+        sourceLabelTidal: "Tidal",
+        sourceLabelQobuz: "Qobuz",
         sourceFilterLabel: "Sources:",
         sourceFilterMigu: "MiGu",
         sourceFilterNetease: "NetEase",
-        sourceSummaryNone: "Sources: none",
-        sourceSummaryMigu: (a) => `Sources: ${a}`,
-        sourceSummaryNetease: (b) => `Sources: ${b}`,
-        sourceSummaryBoth: (a, b) => `Sources: ${a} + ${b}`,
+        sourceFilterSpotify: "Spotify",
+        sourceFilterApple: "Apple",
+        sourceFilterTidal: "Tidal",
+        sourceFilterQobuz: "Qobuz",
         playModeSequence: "Sequence",
         playModeLoopAll: "Loop All",
         playModeSingle: "Single Loop",
@@ -1373,8 +1442,7 @@
       draw();
     }
 
-    // ------------------------ 自定义进度条逻辑 ------------------------
-
+    // ================== 自定义进度条 ==================
     function formatTime(sec) {
       if (!isFinite(sec) || sec < 0) return "00:00";
       const m = Math.floor(sec / 60);
@@ -1416,8 +1484,7 @@
       });
     }
 
-    // ------------------------ 其他 UI 逻辑 ------------------------
-
+    // ================== 通用 UI 逻辑 ==================
     function setStatus(text, kind) {
       globalStatusText.textContent = text;
       if (kind) globalStatusText.dataset.kind = kind;
@@ -1461,19 +1528,26 @@
 
     function updateSourceSummary() {
       const t = langStaticTexts[currentLang];
-      const hasMigu = sourceMiguCheckbox ? sourceMiguCheckbox.checked : true;
-      const hasNetease = sourceNeteaseCheckbox ? sourceNeteaseCheckbox.checked : true;
+      if (!sourceSummaryEl) return;
+
+      const names = [];
+      if (sourceMiguCheckbox && sourceMiguCheckbox.checked)     names.push(t.sourceLabelMigu);
+      if (sourceNeteaseCheckbox && sourceNeteaseCheckbox.checked) names.push(t.sourceLabelNetease);
+      if (sourceSpotifyCheckbox && sourceSpotifyCheckbox.checked) names.push(t.sourceLabelSpotify);
+      if (sourceAppleCheckbox && sourceAppleCheckbox.checked)     names.push(t.sourceLabelApple);
+      if (sourceTidalCheckbox && sourceTidalCheckbox.checked)     names.push(t.sourceLabelTidal);
+      if (sourceQobuzCheckbox && sourceQobuzCheckbox.checked)     names.push(t.sourceLabelQobuz);
+
       let text;
-      if (hasMigu && hasNetease) {
-        text = t.sourceSummaryBoth(t.sourceLabelMigu, t.sourceLabelNetease);
-      } else if (hasMigu) {
-        text = t.sourceSummaryMigu(t.sourceLabelMigu);
-      } else if (hasNetease) {
-        text = t.sourceSummaryNetease(t.sourceLabelNetease);
+      if (!names.length) {
+        text = currentLang === "zh" ? "当前来源：暂无" : "Sources: none";
+      } else if (names.length === 1) {
+        text = currentLang === "zh" ? `当前来源：${names[0]}` : `Sources: ${names[0]}`;
       } else {
-        text = t.sourceSummaryNone;
+        const joined = names.join(" + ");
+        text = currentLang === "zh" ? `当前来源：${joined}` : `Sources: ${joined}`;
       }
-      if (sourceSummaryEl) sourceSummaryEl.textContent = text;
+      sourceSummaryEl.textContent = text;
     }
 
     function updatePlayModeLabel() {
@@ -1505,6 +1579,10 @@
       if (sourceFilterLabelEl) sourceFilterLabelEl.textContent = t.sourceFilterLabel;
       if (sourceFilterMiguTextEl) sourceFilterMiguTextEl.textContent = t.sourceFilterMigu;
       if (sourceFilterNeteaseTextEl) sourceFilterNeteaseTextEl.textContent = t.sourceFilterNetease;
+      if (sourceFilterSpotifyTextEl) sourceFilterSpotifyTextEl.textContent = t.sourceFilterSpotify;
+      if (sourceFilterAppleTextEl)   sourceFilterAppleTextEl.textContent   = t.sourceFilterApple;
+      if (sourceFilterTidalTextEl)   sourceFilterTidalTextEl.textContent   = t.sourceFilterTidal;
+      if (sourceFilterQobuzTextEl)   sourceFilterQobuzTextEl.textContent   = t.sourceFilterQobuz;
 
       if (!currentSongData) {
         songTitleEl.textContent = t.nowPlayingIdleTitle;
@@ -1547,8 +1625,14 @@
         let labelText;
         if (currentSourceType === "netease") {
           labelText = t.sourceLabelNetease;
-        } else if (currentSourceType === "both") {
-          labelText = t.sourceLabelBoth(t.sourceLabelMigu, t.sourceLabelNetease);
+        } else if (currentSourceType === "spotify") {
+          labelText = t.sourceLabelSpotify;
+        } else if (currentSourceType === "apple") {
+          labelText = t.sourceLabelApple;
+        } else if (currentSourceType === "tidal") {
+          labelText = t.sourceLabelTidal;
+        } else if (currentSourceType === "qobuz") {
+          labelText = t.sourceLabelQobuz;
         } else {
           labelText = t.sourceLabelMigu;
         }
@@ -1557,15 +1641,19 @@
     }
 
     function ensureAtLeastOneSource(changed) {
-      if (!sourceMiguCheckbox || !sourceNeteaseCheckbox) return;
-      const useMigu = sourceMiguCheckbox.checked;
-      const useNetease = sourceNeteaseCheckbox.checked;
-      if (!useMigu && !useNetease) {
-        if (changed === "migu") {
-          sourceNeteaseCheckbox.checked = true;
-        } else {
-          sourceMiguCheckbox.checked = true;
-        }
+      const allCbs = [
+        { key: "migu",    el: sourceMiguCheckbox },
+        { key: "netease", el: sourceNeteaseCheckbox },
+        { key: "spotify", el: sourceSpotifyCheckbox },
+        { key: "apple",   el: sourceAppleCheckbox },
+        { key: "tidal",   el: sourceTidalCheckbox },
+        { key: "qobuz",   el: sourceQobuzCheckbox }
+      ].filter(it => it.el);
+
+      const hasAny = allCbs.some(it => it.el.checked);
+      if (!hasAny) {
+        const target = allCbs.find(it => it.key === changed) || allCbs[0];
+        target.el.checked = true;
       }
       updateSourceSummary();
     }
@@ -1598,6 +1686,26 @@
         ensureAtLeastOneSource("netease")
       );
     }
+    if (sourceSpotifyCheckbox) {
+      sourceSpotifyCheckbox.addEventListener("change", () =>
+        ensureAtLeastOneSource("spotify")
+      );
+    }
+    if (sourceAppleCheckbox) {
+      sourceAppleCheckbox.addEventListener("change", () =>
+        ensureAtLeastOneSource("apple")
+      );
+    }
+    if (sourceTidalCheckbox) {
+      sourceTidalCheckbox.addEventListener("change", () =>
+        ensureAtLeastOneSource("tidal")
+      );
+    }
+    if (sourceQobuzCheckbox) {
+      sourceQobuzCheckbox.addEventListener("change", () =>
+        ensureAtLeastOneSource("qobuz")
+      );
+    }
 
     searchForm.addEventListener("submit", function (e) {
       e.preventDefault();
@@ -1611,18 +1719,400 @@
       searchSongs(q);
     });
 
+    // ================== JSONP + MD5 工具（GDStudio 用） ==================
+
+    // 简单 md5 实现（返回 32 位十六进制小写）
+    function md5cycle(x, k) {
+      let [a, b, c, d] = x;
+
+      function ff(a, b, c, d, x, s, t) {
+        a = a + ((b & c) | (~b & d)) + x + t;
+        return ((a << s) | (a >>> (32 - s))) + b;
+      }
+      function gg(a, b, c, d, x, s, t) {
+        a = a + ((b & d) | (c & ~d)) + x + t;
+        return ((a << s) | (a >>> (32 - s))) + b;
+      }
+      function hh(a, b, c, d, x, s, t) {
+        a = a + (b ^ c ^ d) + x + t;
+        return ((a << s) | (a >>> (32 - s))) + b;
+      }
+      function ii(a, b, c, d, x, s, t) {
+        a = a + (c ^ (b | ~d)) + x + t;
+        return ((a << s) | (a >>> (32 - s))) + b;
+      }
+
+      // 64 轮
+      a = ff(a, b, c, d, k[0], 7, -680876936);
+      d = ff(d, a, b, c, k[1], 12, -389564586);
+      c = ff(c, d, a, b, k[2], 17, 606105819);
+      b = ff(b, c, d, a, k[3], 22, -1044525330);
+      a = ff(a, b, c, d, k[4], 7, -176418897);
+      d = ff(d, a, b, c, k[5], 12, 1200080426);
+      c = ff(c, d, a, b, k[6], 17, -1473231341);
+      b = ff(b, c, d, a, k[7], 22, -45705983);
+      a = ff(a, b, c, d, k[8], 7, 1770035416);
+      d = ff(d, a, b, c, k[9], 12, -1958414417);
+      c = ff(c, d, a, b, k[10], 17, -42063);
+      b = ff(b, c, d, a, k[11], 22, -1990404162);
+      a = ff(a, b, c, d, k[12], 7, 1804603682);
+      d = ff(d, a, b, c, k[13], 12, -40341101);
+      c = ff(c, d, a, b, k[14], 17, -1502002290);
+      b = ff(b, c, d, a, k[15], 22, 1236535329);
+
+      a = gg(a, b, c, d, k[1], 5, -165796510);
+      d = gg(d, a, b, c, k[6], 9, -1069501632);
+      c = gg(c, d, a, b, k[11], 14, 643717713);
+      b = gg(b, c, d, a, k[0], 20, -373897302);
+      a = gg(a, b, c, d, k[5], 5, -701558691);
+      d = gg(d, a, b, c, k[10], 9, 38016083);
+      c = gg(c, d, a, b, k[15], 14, -660478335);
+      b = gg(b, c, d, a, k[4], 20, -405537848);
+      a = gg(a, b, c, d, k[9], 5, 568446438);
+      d = gg(d, a, b, c, k[14], 9, -1019803690);
+      c = gg(c, d, a, b, k[3], 14, -187363961);
+      b = gg(b, c, d, a, k[8], 20, 1163531501);
+      a = gg(a, b, c, d, k[13], 5, -1444681467);
+      d = gg(d, a, b, c, k[2], 9, -51403784);
+      c = gg(c, d, a, b, k[7], 14, 1735328473);
+      b = gg(b, c, d, a, k[12], 20, -1926607734);
+
+      a = hh(a, b, c, d, k[5], 4, -378558);
+      d = hh(d, a, b, c, k[8], 11, -2022574463);
+      c = hh(c, d, a, b, k[11], 16, 1839030562);
+      b = hh(b, c, d, a, k[14], 23, -35309556);
+      a = hh(a, b, c, d, k[1], 4, -1530992060);
+      d = hh(d, a, b, c, k[4], 11, 1272893353);
+      c = hh(c, d, a, b, k[7], 16, -155497632);
+      b = hh(b, c, d, a, k[10], 23, -1094730640);
+      a = hh(a, b, c, d, k[13], 4, 681279174);
+      d = hh(d, a, b, c, k[0], 11, -358537222);
+      c = hh(c, d, a, b, k[3], 16, -722521979);
+      b = hh(b, c, d, a, k[6], 23, 76029189);
+      a = hh(a, b, c, d, k[9], 4, -640364487);
+      d = hh(d, a, b, c, k[12], 11, -421815835);
+      c = hh(c, d, a, b, k[15], 16, 530742520);
+      b = hh(b, c, d, a, k[2], 23, -995338651);
+
+      a = ii(a, b, c, d, k[0], 6, -198630844);
+      d = ii(d, a, b, c, k[7], 10, 1126891415);
+      c = ii(c, d, a, b, k[14], 15, -1416354905);
+      b = ii(b, c, d, a, k[5], 21, -57434055);
+      a = ii(a, b, c, d, k[12], 6, 1700485571);
+      d = ii(d, a, b, c, k[3], 10, -1894986606);
+      c = ii(c, d, a, b, k[10], 15, -1051523);
+      b = ii(b, c, d, a, k[1], 21, -2054922799);
+      a = ii(a, b, c, d, k[8], 6, 1873313359);
+      d = ii(d, a, b, c, k[15], 10, -30611744);
+      c = ii(c, d, a, b, k[6], 15, -1560198380);
+      b = ii(b, c, d, a, k[13], 21, 1309151649);
+      a = ii(a, b, c, d, k[4], 6, -145523070);
+      d = ii(d, a, b, c, k[11], 10, -1120210379);
+      c = ii(c, d, a, b, k[2], 15, 718787259);
+      b = ii(b, c, d, a, k[9], 21, -343485551);
+
+      x[0] = (x[0] + a) | 0;
+      x[1] = (x[1] + b) | 0;
+      x[2] = (x[2] + c) | 0;
+      x[3] = (x[3] + d) | 0;
+    }
+
+    function md5blk(s) {
+      const blks = [];
+      for (let i = 0; i < 64; i += 4) {
+        blks[i >> 2] =
+          s.charCodeAt(i) |
+          (s.charCodeAt(i + 1) << 8) |
+          (s.charCodeAt(i + 2) << 16) |
+          (s.charCodeAt(i + 3) << 24);
+      }
+      return blks;
+    }
+
+    function md51(s) {
+      let n = s.length;
+      const state = [1732584193, -271733879, -1732584194, 271733878];
+      let i;
+      for (i = 64; i <= n; i += 64) {
+        md5cycle(state, md5blk(s.substring(i - 64, i)));
+      }
+      s = s.substring(i - 64);
+      const tail = new Array(16).fill(0);
+      for (i = 0; i < s.length; i++) {
+        tail[i >> 2] |= s.charCodeAt(i) << ((i % 4) << 3);
+      }
+      tail[i >> 2] |= 0x80 << ((i % 4) << 3);
+      if (i > 55) {
+        md5cycle(state, tail);
+        for (let j = 0; j < 16; j++) tail[j] = 0;
+      }
+      tail[14] = n * 8;
+      md5cycle(state, tail);
+      return state;
+    }
+
+    function rhex(n) {
+      const hex = "0123456789abcdef";
+      let s = "";
+      for (let j = 0; j < 4; j++) {
+        s +=
+          hex.charAt((n >> (j * 8 + 4)) & 0x0f) +
+          hex.charAt((n >> (j * 8)) & 0x0f);
+      }
+      return s;
+    }
+
+    function md5(s) {
+      const arr = md51(s);
+      return rhex(arr[0]) + rhex(arr[1]) + rhex(arr[2]) + rhex(arr[3]);
+    }
+
+    function gdsYieldCallback() {
+      let randomNum = "";
+      for (let i = 0; i < 21; i++) {
+        randomNum += Math.floor(Math.random() * 10);
+      }
+      const timestamp = Date.now();
+      return `jQuery${randomNum}_${timestamp}`;
+    }
+
+    function gdsYieldCRC(idValue, hostname = "music.gdstudio.xyz", version = "2025.11.4") {
+      const tsMs = Date.now();
+      const ts9 = String(tsMs).slice(0, 9);
+      const parts = version.split(".");
+      const padded = parts.map((p) => (p.length === 1 ? "0" + p : p));
+      const verPadded = padded.join("");
+      const idStr = encodeURIComponent(String(idValue));
+      const src = `${hostname}|${verPadded}|${ts9}|${idStr}`;
+      const md5Hex = md5(src);
+      return md5Hex.slice(-8).toUpperCase();
+    }
+
+    function parseJSONP(text) {
+      const start = text.indexOf("(");
+      const end = text.lastIndexOf(")");
+      if (start === -1 || end === -1 || end <= start + 1) return null;
+      const jsonStr = text.slice(start + 1, end);
+      try {
+        return JSON.parse(jsonStr);
+      } catch (e) {
+        console.error("JSONP parse error", e);
+        return null;
+      }
+    }
+
+    async function gdsSearchOnce(source, keyword, limit) {
+      const baseUrl = GDS_SITE_TO_API[source];
+      if (!baseUrl) return [];
+      const callbackName = gdsYieldCallback();
+      const sVal = gdsYieldCRC(keyword);
+
+      const count = limit;
+      const paramsBase = {
+        types: "search",
+        source: source,
+        count: String(count),
+        pages: "1",
+        name: keyword,
+        s: sVal
+      };
+
+      let url = baseUrl;
+      let fetchOptions = {};
+      if (baseUrl === "https://music.gdstudio.xyz/api.php") {
+        const params = new URLSearchParams({ callback: callbackName });
+        url = baseUrl + "?" + params.toString();
+        const bodyParams = new URLSearchParams(paramsBase);
+        fetchOptions = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+          },
+          body: bodyParams.toString()
+        };
+      } else {
+        const params = new URLSearchParams({
+          ...paramsBase,
+          callback: callbackName,
+          _: String(Date.now())
+        });
+        url = baseUrl + "?" + params.toString();
+        fetchOptions = {
+          method: "GET"
+        };
+      }
+
+      const resp = await fetch(url);
+      const text = await resp.text();
+      const data = parseJSONP(text);
+      if (!Array.isArray(data)) return [];
+      return data;
+    }
+
+    async function gdsFetchUrl(source, idValue) {
+      const baseUrl = GDS_SITE_TO_API[source];
+      if (!baseUrl) return null;
+      const callbackName = gdsYieldCallback();
+      const sVal = gdsYieldCRC(idValue);
+
+      const dataJson = {
+        types: "url",
+        id: idValue,
+        source: source,
+        br: 999,
+        s: sVal
+      };
+
+      let url = baseUrl;
+      let fetchOptions = {};
+      if (baseUrl === "https://music.gdstudio.xyz/api.php") {
+        const params = new URLSearchParams({ callback: callbackName });
+        url = baseUrl + "?" + params.toString();
+        const bodyParams = new URLSearchParams(dataJson);
+        fetchOptions = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+          },
+          body: bodyParams.toString()
+        };
+      } else {
+        const params = new URLSearchParams({
+          ...dataJson,
+          callback: callbackName,
+          _: String(Date.now())
+        });
+        url = baseUrl + "?" + params.toString();
+        fetchOptions = { method: "GET" };
+      }
+
+      const resp = await fetch(url);
+      const text = await resp.text();
+      const result = parseJSONP(text);
+      return result || null;
+    }
+
+    async function gdsFetchLyric(source, lyricId) {
+      const baseUrl = GDS_SITE_TO_API[source];
+      if (!baseUrl || !lyricId) return null;
+      const callbackName = gdsYieldCallback();
+      const sVal = gdsYieldCRC(lyricId);
+
+      const dataJson = {
+        types: "lyric",
+        id: lyricId,
+        source: source,
+        s: sVal
+      };
+
+      let url = baseUrl;
+      let fetchOptions = {};
+      if (baseUrl === "https://music.gdstudio.xyz/api.php") {
+        const params = new URLSearchParams({ callback: callbackName });
+        url = baseUrl + "?" + params.toString();
+        const bodyParams = new URLSearchParams(dataJson);
+        fetchOptions = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
+          },
+          body: bodyParams.toString()
+        };
+      } else {
+        const params = new URLSearchParams({
+          ...dataJson,
+          callback: callbackName,
+          _: String(Date.now())
+        });
+        url = baseUrl + "?" + params.toString();
+        fetchOptions = { method: "GET" };
+      }
+
+      const resp = await fetch(url);
+      const text = await resp.text();
+      const result = parseJSONP(text);
+      return result || null;
+    }
+
+    // 返回：[{ title, singer, source, data }, ...]
+    async function searchGDStudioSource(rootSource, keyword, limit) {
+      try {
+        const searchResults = await gdsSearchOnce(rootSource, keyword, limit);
+        if (!Array.isArray(searchResults)) return [];
+        const out = [];
+        for (const sr of searchResults) {
+          if (!sr || typeof sr !== "object") continue;
+          if (!("id" in sr) || !("source" in sr)) continue;
+          try {
+            const dlRes = await gdsFetchUrl(sr.source, sr.id);
+            if (!dlRes || !dlRes.url) continue;
+            let downloadUrl = dlRes.url;
+            if (!downloadUrl.startsWith("http")) {
+              downloadUrl = "https://music.gdstudio.xyz/" + downloadUrl;
+            }
+            if (sr.source === "bilibili") {
+              downloadUrl = "https://music-proxy.gdstudio.org/" + downloadUrl;
+            }
+
+            let lyricText = "";
+            if (sr.lyric_id) {
+              const lyRes = await gdsFetchLyric(sr.source, sr.lyric_id);
+              if (lyRes) {
+                lyricText = lyRes.lyric || lyRes.tlyric || "";
+              }
+            }
+
+            const title = sr.name || "Unknown";
+            const singer = Array.isArray(sr.artist)
+              ? sr.artist.join(", ")
+              : (sr.artist || "");
+
+            const cover = sr.pic || sr.cover || sr.picUrl || null;
+            const link = sr.url || sr.link || null;
+
+            const data = {
+              title: title,
+              singer: singer,
+              cover: cover,
+              music_url: downloadUrl,
+              lrc: lyricText || null,
+              link: link,
+              _source: sr.source
+            };
+
+            out.push({
+              title: title,
+              singer: singer,
+              source: sr.source,  // e.g. spotify/apple/tidal/qobuz
+              data: data
+            });
+
+            if (out.length >= limit) break;
+          } catch (e) {
+            console.error("gdstudio single item error", e);
+          }
+        }
+        return out;
+      } catch (e) {
+        console.error("searchGDStudioSource error", e);
+        return [];
+      }
+    }
+
+    // ================== 搜索逻辑 ==================
     async function searchSongs(query) {
       const t = langStaticTexts[currentLang];
       try {
-        let useMigu = !sourceMiguCheckbox || sourceMiguCheckbox.checked;
-        let useNetease = !sourceNeteaseCheckbox || sourceNeteaseCheckbox.checked;
+        let useMigu     = !sourceMiguCheckbox     || sourceMiguCheckbox.checked;
+        let useNetease  = !sourceNeteaseCheckbox  || sourceNeteaseCheckbox.checked;
+        let useSpotify  = !sourceSpotifyCheckbox  || sourceSpotifyCheckbox.checked;
+        let useApple    = !sourceAppleCheckbox    || sourceAppleCheckbox.checked;
+        let useTidal    = !sourceTidalCheckbox    || sourceTidalCheckbox.checked;
+        let useQobuz    = !sourceQobuzCheckbox    || sourceQobuzCheckbox.checked;
 
-        // 防止两个都被取消，强制恢复为两个都选
-        if (!useMigu && !useNetease) {
+        if (!useMigu && !useNetease && !useSpotify && !useApple && !useTidal && !useQobuz) {
           useMigu = true;
-          useNetease = true;
           if (sourceMiguCheckbox) sourceMiguCheckbox.checked = true;
-          if (sourceNeteaseCheckbox) sourceNeteaseCheckbox.checked = true;
         }
 
         const miguUrl =
@@ -1646,19 +2136,37 @@
           ? fetch(neteaseUrl).then((r) => r.json()).catch(() => null)
           : Promise.resolve(null);
 
-        const [miguText, neteaseJson] = await Promise.all([
-          miguPromise,
-          neteasePromise
-        ]);
+        const spotifyPromise = useSpotify
+          ? searchGDStudioSource("spotify", query, PER_SOURCE_LIMIT)
+          : Promise.resolve([]);
+        const applePromise = useApple
+          ? searchGDStudioSource("apple", query, PER_SOURCE_LIMIT)
+          : Promise.resolve([]);
+        const tidalPromise = useTidal
+          ? searchGDStudioSource("tidal", query, PER_SOURCE_LIMIT)
+          : Promise.resolve([]);
+        const qobuzPromise = useQobuz
+          ? searchGDStudioSource("qobuz", query, PER_SOURCE_LIMIT)
+          : Promise.resolve([]);
+
+        const [miguText, neteaseJson, spotifyList, appleList, tidalList, qobuzList] =
+          await Promise.all([
+            miguPromise,
+            neteasePromise,
+            spotifyPromise,
+            applePromise,
+            tidalPromise,
+            qobuzPromise
+          ]);
 
         let miguListRaw = [];
         if (miguText) {
-          miguListRaw = parseSearchResultText(miguText);
+          miguListRaw = parseSearchResultText(miguText).slice(0, 5); // 咪咕最多 5 条
         }
 
         let neteaseListRaw = [];
         if (neteaseJson && neteaseJson.code === 200 && Array.isArray(neteaseJson.data)) {
-          neteaseListRaw = neteaseJson.data.map((it) => ({
+          neteaseListRaw = neteaseJson.data.slice(0, 5).map((it) => ({
             index: it.n,
             title: it.title,
             singer: it.singer,
@@ -1692,6 +2200,32 @@
               songid: it.songid
             });
           });
+        }
+
+        function pushGDList(list, sourceName) {
+          list.forEach((it) => {
+            if (!it || !it.title) return;
+            merged.push({
+              globalIndex: globalIndex++,
+              title: it.title,
+              singer: it.singer || "",
+              source: sourceName,
+              data: it.data || null
+            });
+          });
+        }
+
+        if (useSpotify && Array.isArray(spotifyList)) {
+          pushGDList(spotifyList, "spotify");
+        }
+        if (useApple && Array.isArray(appleList)) {
+          pushGDList(appleList, "apple");
+        }
+        if (useTidal && Array.isArray(tidalList)) {
+          pushGDList(tidalList, "tidal");
+        }
+        if (useQobuz && Array.isArray(qobuzList)) {
+          pushGDList(qobuzList, "qobuz");
         }
 
         updateSourceSummary();
@@ -1766,15 +2300,27 @@
         singerEl.textContent = "— " + item.singer;
 
         const chip = document.createElement("span");
-        const isNetease = item.source === "netease";
-        chip.className =
-          "source-chip " + (isNetease ? "source-chip-netease" : "source-chip-migu");
+        let chipClass = "source-chip-migu";
+        if (item.source === "netease") chipClass = "source-chip-netease";
+        else if (item.source === "spotify") chipClass = "source-chip-spotify";
+        else if (item.source === "apple") chipClass = "source-chip-apple";
+        else if (item.source === "tidal") chipClass = "source-chip-tidal";
+        else if (item.source === "qobuz") chipClass = "source-chip-qobuz";
+        chip.className = "source-chip " + chipClass;
+
         const chipDot = document.createElement("span");
         chipDot.className = "source-chip-dot";
         const chipText = document.createElement("span");
-        chipText.textContent = isNetease
-          ? t.sourceLabelNetease
-          : t.sourceLabelMigu;
+
+        let label;
+        if (item.source === "netease") label = t.sourceLabelNetease;
+        else if (item.source === "spotify") label = t.sourceLabelSpotify;
+        else if (item.source === "apple") label = t.sourceLabelApple;
+        else if (item.source === "tidal") label = t.sourceLabelTidal;
+        else if (item.source === "qobuz") label = t.sourceLabelQobuz;
+        else label = t.sourceLabelMigu;
+        chipText.textContent = label;
+
         chip.appendChild(chipDot);
         chip.appendChild(chipText);
 
@@ -1792,7 +2338,8 @@
           apiIndex: item.apiIndex,
           title: item.title,
           singer: item.singer,
-          songid: item.songid || null
+          songid: item.songid || null,
+          data: item.data || null
         };
 
         newPlaylist.push(payload);
@@ -1880,10 +2427,7 @@
 
     async function fetchSongDetail(item) {
       if (item.source === "netease") {
-        if (!item.songid) {
-          throw new Error("Missing NetEase songid");
-        }
-
+        if (!item.songid) throw new Error("Missing NetEase songid");
         const url =
           API_NETEASE_DETAIL +
           "?id=" +
@@ -1906,12 +2450,11 @@
           music_url: raw.url || raw.music_url || raw.music || raw.play_url || null,
           lrc_url: raw.lrc_url || raw.lrc || null,
           lrc: raw.lyric || raw.lrc_text || null,
-          link: raw.page || raw.link || raw.page_url || null
+          link: raw.page || raw.link || raw.page_url || null,
+          _source: "netease"
         };
-
-        data._source = "netease";
         return data;
-      } else {
+      } else if (item.source === "migu") {
         const url =
           API_MIGU +
           "?msg=" +
@@ -1926,6 +2469,10 @@
         const data = json.data;
         data._source = "migu";
         return data;
+      } else {
+        // 其它源（spotify/apple/tidal/qobuz）在 searchGDStudioSource 里已经填好 data
+        if (item.data) return item.data;
+        throw new Error("Unsupported source");
       }
     }
 
@@ -1939,7 +2486,14 @@
         if (item.source === "netease" && item.songid && p.songid) {
           return p.songid === item.songid;
         }
-        return p.query === item.query && p.apiIndex === item.apiIndex;
+        if (item.source === "migu") {
+          return p.query === item.query && p.apiIndex === item.apiIndex;
+        }
+        // gdstudio 源：按 title + singer 粗略匹配
+        if (["spotify", "apple", "tidal", "qobuz"].includes(item.source)) {
+          return p.title === item.title && p.singer === item.singer;
+        }
+        return false;
       });
 
       if (pos === -1) {
@@ -2045,9 +2599,18 @@
       if (type === "netease") {
         labelText = t2.sourceLabelNetease;
         dotClass = "source-netease";
-      } else if (type === "both") {
-        labelText = t2.sourceLabelBoth(t2.sourceLabelMigu, t2.sourceLabelNetease);
-        dotClass = "source-mixed";
+      } else if (type === "spotify") {
+        labelText = t2.sourceLabelSpotify;
+        dotClass = "source-spotify";
+      } else if (type === "apple") {
+        labelText = t2.sourceLabelApple;
+        dotClass = "source-apple";
+      } else if (type === "tidal") {
+        labelText = t2.sourceLabelTidal;
+        dotClass = "source-tidal";
+      } else if (type === "qobuz") {
+        labelText = t2.sourceLabelQobuz;
+        dotClass = "source-qobuz";
       } else {
         labelText = t2.sourceLabelMigu;
         dotClass = "source-migu";
@@ -2058,7 +2621,6 @@
       if (dotEl) dotEl.className = "source-dot " + dotClass;
       songSourceTag.style.display = "inline-flex";
 
-      // 重置歌词与进度条显示
       lrcEntries = [];
       currentLyricIndex = -1;
       if (lyricsLinkWrap) lyricsLinkWrap.innerHTML = "";
@@ -2154,7 +2716,6 @@
       if (lyricsLinkWrap) lyricsLinkWrap.innerHTML = "";
     }
 
-    // 原有 timeupdate：歌词同步（与进度条的 timeupdate 共存）
     audioEl.addEventListener("timeupdate", () => {
       if (!lrcEntries.length) return;
       const currentTime = audioEl.currentTime;
@@ -2203,7 +2764,6 @@
     audioEl.addEventListener("ended", () => {
       const t = langStaticTexts[currentLang];
       songStatusShort.textContent = t.stateEnded;
-      // 结束时根据播放模式自动跳转
       playNextInPlaylist(true);
     });
 
