@@ -369,6 +369,31 @@ export default {
         return successResponse(null, '删除成功');
       }
       
+      // 歌单重命名
+      if (path.match(/^\/api\/playlists\/\d+$/) && method === 'PATCH') {
+        const user = await getUserFromRequest(request, env);
+        if (!user) {
+          return errorResponse('请先登录', 401);
+        }
+        const playlistId = parseInt(path.split('/').pop());
+        const body = await request.json();
+        const { name } = body;
+        if (!name || name.trim().length === 0) {
+          return errorResponse('歌单名称不能为空');
+        }
+        // 验证歌单属于当前用户
+        const playlist = await env.DB.prepare(
+          'SELECT id FROM playlists WHERE id = ? AND user_id = ?'
+        ).bind(playlistId, user.userId).first();
+        if (!playlist) {
+          return errorResponse('歌单不存在');
+        }
+        await env.DB.prepare(
+          'UPDATE playlists SET name = ? WHERE id = ?'
+        ).bind(name.trim(), playlistId).run();
+        return successResponse(null, '重命名成功');
+      }
+
       // 获取歌单详情（包含歌曲）
       if (path.match(/^\/api\/playlists\/\d+$/) && method === 'GET') {
         const user = await getUserFromRequest(request, env);

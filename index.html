@@ -244,6 +244,22 @@
       background: var(--bg-hover);
       color: var(--text-primary);
     }
+    .playlist-edit-btn {
+      margin-left: 8px;
+      background: var(--bg-hover);
+      border: none;
+      color: var(--text-secondary);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 2px 8px;
+      transition: all 0.2s ease;
+    }
+    .playlist-edit-btn:hover {
+      background: var(--accent);
+      color: var(--bg-primary);
+    }
+
 
     .playlist-item.active {
       background: var(--accent-soft);
@@ -419,6 +435,17 @@
       color: var(--accent);
     }
 
+.source-chip.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.source-help {
+  margin-left: 2px;
+  color: #aaa;
+  font-size: 14px;
+  cursor: help;
+}
+
     .source-chip input {
       display: none;
     }
@@ -432,6 +459,8 @@
     .source-dot.migu { background: #ff9800; }
     .source-dot.netease { background: #e91e63; }
     .source-dot.qq { background: #00bcd4; }
+
+.source-dot.kuwo { background: #1e90ff; }
 
     /* 主题切换 */
     .theme-toggle {
@@ -1239,6 +1268,52 @@
   </style>
 </head>
 <body>
+  <script>
+    // 登录后检测所有源可用性
+    window.addEventListener('DOMContentLoaded', async () => {
+      const sources = ['qq', 'netease', 'migu', 'kuwo'];
+      for (const src of sources) {
+        try {
+          const url = src === 'qq' || src === 'kuwo'
+            ? `https://music-dl.sayqz.com/api?&type=search&keyword=${encodeURIComponent('薛之谦')}&source=${src}&limit=1`
+            : src === 'netease'
+              ? `https://api.cenguigui.cn/api/netease/music_v1.php?type=search&keyword=${encodeURIComponent('薛之谦')}&limit=1`
+              : `https://api-v1.cenguigui.cn/api/mg_music/?msg=${encodeURIComponent('薛之谦')}&n=1&type=json&br=1`;
+          const res = await fetch(url);
+          const json = await res.json();
+          if ((src === 'qq' || src === 'kuwo') && json.code === 200 && json.data && json.data.results && json.data.results.length > 0) {
+            state.sourceStatus[src] = true;
+          } else if (src === 'netease' && json.code === 200 && json.data && Array.isArray(json.data.songs) && json.data.songs.length > 0) {
+            state.sourceStatus[src] = true;
+          } else if (src === 'migu' && json.code === 200 && json.data) {
+            state.sourceStatus[src] = true;
+          } else {
+            state.sourceStatus[src] = false;
+          }
+        } catch (e) {
+          state.sourceStatus[src] = false;
+        }
+      }
+      updateSourceSelectorUI();
+    });
+  </script>
+  <script>
+    // 多平台同步管理弹窗（占位，后续补充扫码/验证码登录、收藏/歌单分平台展示、退出同步等逻辑）
+    function showSyncManageDialog() {
+    // 歌单删除和重命名弹窗（占位，后续补充逻辑）
+    function showPlaylistEditDialog(playlistId) {
+      alert('歌单删除和重命名功能开发中');
+    }
+
+      alert('多平台同步功能开发中：扫码/验证码登录、收藏/歌单分平台展示、退出同步等');
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+      const syncBtn = document.getElementById('sync-manage');
+      if (syncBtn) syncBtn.onclick = showSyncManageDialog;
+    });
+  </script>
+
+
   <div class="app">
     <div class="main-container">
       <!-- 侧边栏 -->
@@ -1283,6 +1358,16 @@
             </div>
             <div class="playlist-list" id="playlist-list">
               <!-- 歌单列表动态生成 -->
+                <!-- 歌单编辑按钮占位，实际渲染时补充 -->
+                <!-- 示例：<button class='playlist-edit-btn' data-id='1'>编辑</button> -->
+
+
+              <div class="source-multi-toggle">
+                <label style="margin-left:8px;">
+                  <input type="checkbox" id="multi-source-toggle">
+                  <span>多源搜索</span>
+                </label>
+              </div>
             </div>
           </div>
         </nav>
@@ -1290,9 +1375,14 @@
         <div class="sidebar-footer">
           <div class="user-info">
             <div class="user-avatar" id="user-avatar">U</div>
+              <div id="user-menu" class="user-menu" style="display:none;position:absolute;right:20px;top:60px;z-index:1000;background:#fff;border-radius:8px;box-shadow:0 2px 8px #0002;padding:12px 0;min-width:160px;">
+                <div class="user-menu-item" id="avatar-edit">自定义头像</div>
+                <div class="user-menu-item" id="sync-manage">同步音乐平台</div>
+                <div class="user-menu-item" id="logout-menu">退出登录</div>
+              </div>
             <span class="user-name" id="user-name">用户</span>
             <div class="user-actions">
-              <button class="user-action-btn" id="logout-btn" title="退出登录">🚪</button>
+
             </div>
           </div>
         </div>
@@ -1324,6 +1414,11 @@
               <span>咪咕</span>
             </label>
           </div>
+            <label class="source-chip">
+              <input type="checkbox" data-source="kuwo">
+              <span class="source-dot kuwo"></span>
+              <span>酷我音乐</span>
+            </label>
 
           <button class="theme-toggle" id="theme-toggle" title="切换主题">🌙</button>
         </div>
@@ -1368,11 +1463,10 @@
 
       <div class="player-controls">
         <div class="player-buttons">
-          <button class="player-btn" id="shuffle-btn" title="随机播放">🔀</button>
+          <button class="player-btn" id="playmode-btn" title="播放模式">🔁</button>
           <button class="player-btn" id="prev-btn" title="上一首">⏮️</button>
           <button class="player-btn play-btn" id="play-btn" title="播放">▶️</button>
           <button class="player-btn" id="next-btn" title="下一首">⏭️</button>
-          <button class="player-btn" id="repeat-btn" title="循环模式">🔁</button>
         </div>
         <div class="player-progress">
           <span class="player-time" id="current-time">0:00</span>
@@ -1404,6 +1498,25 @@
       </div>
       <input type="text" class="modal-input" id="playlist-name-input" placeholder="请输入歌单名称">
       <div class="modal-actions">
+    // 歌单编辑按钮事件（占位，后续补充删除/重命名逻辑）
+    function initPlaylistEditEvents() {
+      document.querySelectorAll('.playlist-edit-btn').forEach(btn => {
+        btn.onclick = function() {
+          const pid = btn.getAttribute('data-id');
+          showPlaylistEditDialog(pid);
+        };
+      });
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+      initPlaylistEditEvents();
+      // 歌单侧边栏渲染后也需要重新绑定编辑按钮事件
+      const origRenderSidebar = renderPlaylistSidebar;
+      window.renderPlaylistSidebar = function() {
+        origRenderSidebar();
+        initPlaylistEditEvents();
+      };
+    });
+
         <button class="modal-btn modal-btn-cancel" id="playlist-cancel">取消</button>
         <button class="modal-btn modal-btn-confirm" id="playlist-confirm">创建</button>
       </div>
@@ -1424,10 +1537,83 @@
         <button class="modal-btn modal-btn-cancel" id="add-to-playlist-cancel">取消</button>
         <button class="modal-btn modal-btn-confirm" id="add-to-playlist-confirm">添加</button>
       </div>
+    // 用户头像菜单逻辑
+    function initUserMenuEvents() {
+      const avatar = document.getElementById('user-avatar');
+      const menu = document.getElementById('user-menu');
+      let menuOpen = false;
+      avatar.addEventListener('click', () => {
+        menu.style.display = menuOpen ? 'none' : 'block';
+        menuOpen = !menuOpen;
+      });
+      document.addEventListener('click', e => {
+        if (!avatar.contains(e.target) && !menu.contains(e.target)) {
+          menu.style.display = 'none';
+          menuOpen = false;
+        }
+      });
+      document.getElementById('logout-menu').onclick = function() {
+        if (confirm('确定要退出登录吗？')) {
+          // 退出登录逻辑
+          alert('已退出登录');
+        }
+      };
+      document.getElementById('avatar-edit').onclick = function() {
+        alert('自定义头像功能开发中');
+      };
+      document.getElementById('sync-manage').onclick = function() {
+        alert('同步音乐平台功能开发中');
+      };
+    }
+    window.addEventListener('DOMContentLoaded', () => {
+      initUserMenuEvents();
+    });
+
     </div>
   </div>
 
   <div class="toast" id="toast"></div>
+
+    // 音源选择逻辑
+    function initSourceSelectorEvents() {
+      const multiToggle = document.getElementById('multi-source-toggle');
+      document.querySelectorAll('.source-chip input[data-source]').forEach(input => {
+        input.addEventListener('change', e => {
+          if (!multiToggle.checked) {
+            // 单选逻辑
+            if (input.checked) {
+              document.querySelectorAll('.source-chip input[data-source]').forEach(other => {
+                if (other !== input) other.checked = false;
+              });
+            }
+          }
+          // 更新状态
+          Object.keys(state.enabledSources).forEach(src => {
+            state.enabledSources[src] = false;
+          });
+          document.querySelectorAll('.source-chip input[data-source]').forEach(inp => {
+            if (inp.checked) state.enabledSources[inp.getAttribute('data-source')] = true;
+          });
+        });
+      });
+      multiToggle.addEventListener('change', () => {
+        if (!multiToggle.checked) {
+          // 切回单选时只保留第一个选中的
+          let found = false;
+          document.querySelectorAll('.source-chip input[data-source]').forEach(input => {
+            if (input.checked && !found) {
+              found = true;
+            } else {
+              input.checked = false;
+            }
+          });
+        }
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initSourceSelectorEvents();
+    });
 
   <audio id="audio" preload="metadata"></audio>
 
@@ -1446,7 +1632,33 @@
       searchResults: [],
       currentPageNum: 1,
       totalPages: 1,
-      enabledSources: { qq: true, netease: false, migu: false },
+    // 更新音源选择UI
+    function updateSourceSelectorUI() {
+      document.querySelectorAll('.source-chip').forEach(label => {
+        const input = label.querySelector('input[data-source]');
+        if (!input) return;
+        const src = input.getAttribute('data-source');
+        const status = state.sourceStatus[src];
+        if (status === false) {
+          label.classList.add('disabled');
+          input.disabled = true;
+          if (!label.querySelector('.source-help')) {
+            const help = document.createElement('span');
+            help.className = 'source-help';
+            help.title = '该源暂不可用';
+            help.textContent = '❔';
+            label.appendChild(help);
+          }
+        } else {
+          label.classList.remove('disabled');
+          input.disabled = false;
+          const help = label.querySelector('.source-help');
+          if (help) help.remove();
+        }
+      });
+    }
+
+      enabledSources: { qq: true, netease: false, migu: false, kuwo: false },
       favorites: [],
       playlists: [],
       history: [],
@@ -1462,6 +1674,8 @@
       selectedPlaylistId: null,
       pendingSong: null
     };
+      sourceStatus: { qq: null, netease: null, migu: null, kuwo: null }, // null=未检测, true=可用, false=不可用
+
 
     // DOM元素
     const dom = {
@@ -1473,8 +1687,7 @@
       playBtn: document.getElementById('play-btn'),
       prevBtn: document.getElementById('prev-btn'),
       nextBtn: document.getElementById('next-btn'),
-      shuffleBtn: document.getElementById('shuffle-btn'),
-      repeatBtn: document.getElementById('repeat-btn'),
+      playmodeBtn: document.getElementById('playmode-btn'),
       volumeSlider: document.getElementById('volume-slider'),
       volumeBtn: document.getElementById('volume-btn'),
       progressBar: document.getElementById('progress-bar'),
@@ -1610,6 +1823,7 @@
           <span class="folder-icon">📁</span>
           <span class="name">${pl.name}</span>
           <span class="count">${pl.songCount || 0}</span>
+          <button class="playlist-edit-btn" data-id="${pl.id}" title="编辑/删除">⋯</button>
         </div>
       `).join('');
 
@@ -1694,7 +1908,7 @@
       dom.contentArea.innerHTML = `
         <div class="page-header">
           <h1 class="page-title">🔥 热门歌曲</h1>
-          <p class="page-subtitle">大家都在听</p>
+          <p class="page-subtitle">只展示抖音热门</p>
         </div>
         <div class="loading-state">
           <div class="loading-spinner"></div>
@@ -1702,19 +1916,20 @@
         </div>
       `;
 
-      // 搜索热门关键词的歌曲
-      const keyword = state.hotKeywords[Math.floor(Math.random() * state.hotKeywords.length)] || '热门';
-      await doSearch(keyword, false);
-      
+      // 只用“抖音”作为热门关键词
+      const keyword = '抖音';
+      let hotResults = [];
+      try {
+        hotResults = await doSearch(keyword, false, true); // 第三个参数标记为hot
+      } catch (e) {}
       let html = `
         <div class="page-header">
           <h1 class="page-title">🔥 热门歌曲</h1>
-          <p class="page-subtitle">大家都在听 - ${keyword}</p>
+          <p class="page-subtitle">只展示抖音热门</p>
         </div>
       `;
-
-      if (state.searchResults.length > 0) {
-        html += renderSongList(state.searchResults, 1, true);
+      if (hotResults && hotResults.length > 0) {
+        html += renderSongList(hotResults, 1, true);
       } else {
         html += `
           <div class="empty-state">
@@ -1723,7 +1938,6 @@
           </div>
         `;
       }
-
       dom.contentArea.innerHTML = html;
       bindSongListEvents();
     }
@@ -2038,7 +2252,7 @@
     }
 
     // 搜索功能
-    async function doSearch(keyword, updateUI = true) {
+    async function doSearch(keyword, updateUI = true, forHot = false) {
       if (!keyword.trim()) {
         showToast('请输入搜索关键词');
         return;
@@ -2046,7 +2260,10 @@
 
       state.searchKeyword = keyword;
       state.currentPageNum = 1;
-      state.searchResults = [];
+      let results = [];
+      if (!forHot) {
+        state.searchResults = [];
+      }
 
       if (updateUI) {
         dom.contentArea.innerHTML = `
@@ -2073,16 +2290,31 @@
         if (source === 'netease') tasks.push(searchNetease(keyword));
         if (source === 'qq') tasks.push(searchQQKuwo(keyword, 'qq'));
       }
+        if (source === 'kuwo') tasks.push(searchQQKuwo(keyword, 'kuwo'));
 
-      await Promise.all(tasks);
+
+      let allResults = [];
+      if (forHot) {
+        // 收集所有结果
+        const resultsArr = await Promise.all(tasks);
+        for (const arr of resultsArr) {
+          if (Array.isArray(arr)) allResults = allResults.concat(arr);
+        }
+      } else {
+        await Promise.all(tasks);
+      }
 
       if (updateUI) {
         renderSearchPage();
       }
+      if (forHot) {
+        return allResults;
+      }
     }
 
     // 咪咕搜索
-    async function searchMigu(keyword) {
+    async function searchMigu(keyword, forHot = false) {
+      let resultArr = [];
       try {
         const url = `https://api-v1.cenguigui.cn/api/music/mgmusic_lingsheng.php?msg=${encodeURIComponent(keyword)}&limit=50&n=`;
         const res = await fetch(url);
@@ -2098,17 +2330,23 @@
                 detailsLoaded: false
               };
               state.trackMap.set(uid, track);
-              state.searchResults.push(track);
+              if (forHot) {
+                resultArr.push(track);
+              } else {
+                state.searchResults.push(track);
+              }
             }
           }
         }
       } catch (e) {
         console.error('migu search error', e);
       }
+      if (forHot) return resultArr;
     }
 
     // 网易云搜索
-    async function searchNetease(keyword) {
+    async function searchNetease(keyword, forHot = false) {
+      let resultArr = [];
       try {
         const url = `https://api-v1.cenguigui.cn/api/music/netease/WyY_Dg.php?type=json&msg=${encodeURIComponent(keyword)}&num=50&n=`;
         const res = await fetch(url);
@@ -2125,17 +2363,23 @@
                 detailsLoaded: false
               };
               state.trackMap.set(uid, track);
-              state.searchResults.push(track);
+              if (forHot) {
+                resultArr.push(track);
+              } else {
+                state.searchResults.push(track);
+              }
             }
           }
         }
       } catch (e) {
         console.error('netease search error', e);
       }
+      if (forHot) return resultArr;
     }
 
     // QQ音乐搜索
-    async function searchQQKuwo(keyword, source) {
+    async function searchQQKuwo(keyword, source, forHot = false) {
+      let resultArr = [];
       try {
         const url = `https://music-dl.sayqz.com/api?&type=search&keyword=${encodeURIComponent(keyword)}&source=${source}&limit=50`;
         const res = await fetch(url);
@@ -2153,13 +2397,18 @@
                 detailsLoaded: !!it.url
               };
               state.trackMap.set(uid, track);
-              state.searchResults.push(track);
+              if (forHot) {
+                resultArr.push(track);
+              } else {
+                state.searchResults.push(track);
+              }
             }
           }
         }
       } catch (e) {
         console.error(`${source} search error`, e);
       }
+      if (forHot) return resultArr;
     }
 
     // 获取歌曲详情
@@ -2549,8 +2798,10 @@
       if (state.playlist.length === 0) return;
       
       if (state.playMode === 'shuffle') {
-        const idx = Math.floor(Math.random() * state.playlist.length);
-        playTrack(state.playlist[idx]);
+        let idx = Math.floor(Math.random() * state.playlist.length);
+        if (state.playlist.length > 1 && idx === state.playIndex) idx = (idx + 1) % state.playlist.length;
+        state.playIndex = idx;
+        playTrack(state.playlist[state.playIndex]);
       } else {
         state.playIndex = (state.playIndex - 1 + state.playlist.length) % state.playlist.length;
         playTrack(state.playlist[state.playIndex]);
@@ -2564,8 +2815,10 @@
         dom.audio.currentTime = 0;
         dom.audio.play();
       } else if (state.playMode === 'shuffle') {
-        const idx = Math.floor(Math.random() * state.playlist.length);
-        playTrack(state.playlist[idx]);
+        let idx = Math.floor(Math.random() * state.playlist.length);
+        if (state.playlist.length > 1 && idx === state.playIndex) idx = (idx + 1) % state.playlist.length;
+        state.playIndex = idx;
+        playTrack(state.playlist[state.playIndex]);
       } else {
         state.playIndex = (state.playIndex + 1) % state.playlist.length;
         playTrack(state.playlist[state.playIndex]);
@@ -2574,11 +2827,21 @@
 
     function setPlayMode(mode) {
       state.playMode = mode;
-      dom.shuffleBtn.classList.toggle('active', mode === 'shuffle');
-      dom.repeatBtn.classList.toggle('active', mode === 'single');
-      dom.repeatBtn.textContent = mode === 'single' ? '🔂' : '🔁';
-      
+      let icon = '🔁', title = '列表循环';
+      if (mode === 'single') { icon = '🔂'; title = '单曲循环'; }
+      else if (mode === 'shuffle') { icon = '🔀'; title = '随机播放'; }
+      dom.playmodeBtn.textContent = icon;
+      dom.playmodeBtn.title = title;
       const modeNames = { list: '列表循环', single: '单曲循环', shuffle: '随机播放' };
+      // 自动切换下一首
+      dom.audio.onended = function() {
+        if (state.playMode === 'single') {
+          dom.audio.currentTime = 0;
+          dom.audio.play();
+        } else {
+          playNext();
+        }
+      };
       showToast(modeNames[mode]);
     }
 
@@ -2591,6 +2854,13 @@
       });
 
       dom.searchInput.addEventListener('keydown', (e) => {
+      // 播放模式切换
+      dom.playmodeBtn.addEventListener('click', () => {
+        if (state.playMode === 'list') setPlayMode('single');
+        else if (state.playMode === 'single') setPlayMode('shuffle');
+        else setPlayMode('list');
+      });
+
         if (e.key === 'Enter') {
           navigateTo('search');
           doSearch(dom.searchInput.value);
