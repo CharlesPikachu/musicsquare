@@ -277,8 +277,8 @@
     }
 
     /* 用户区域 */
-    .sidebar-footer {
-      padding: 16px;
+    <div class="sidebar-footer" v-if="user.isLoggedIn" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; /* border-top: 1px solid var(--border-color); */">
+      
       border-top: 1px solid var(--border-color);
     }
 
