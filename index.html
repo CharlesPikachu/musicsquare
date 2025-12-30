@@ -1267,7 +1267,7 @@
     }
   </style>
 </head>
-<body>
+<body data-theme="light">
   <script>
     // 登录后检测所有源可用性
     window.addEventListener('DOMContentLoaded', async () => {
@@ -1413,12 +1413,14 @@
               <span class="source-dot migu"></span>
               <span>咪咕</span>
             </label>
-          </div>
             <label class="source-chip">
               <input type="checkbox" data-source="kuwo">
               <span class="source-dot kuwo"></span>
               <span>酷我音乐</span>
             </label>
+            <button class="multi-source-btn" id="multi-source-btn" title="多源搜索" style="margin-left:12px;padding:8px 16px;border-radius:20px;border:none;background:var(--accent);color:#fff;font-size:13px;cursor:pointer;transition:background 0.2s;">多源搜索</button>
+            <button class="theme-toggle" id="theme-toggle" title="切换主题">🌙</button>
+          </div>
 
           <button class="theme-toggle" id="theme-toggle" title="切换主题">🌙</button>
         </div>
