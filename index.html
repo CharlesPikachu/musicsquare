@@ -277,7 +277,7 @@
     }
 
     /* 用户区域 */
-    <div class="sidebar-footer" v-if="user.isLoggedIn" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; /* border-top: 1px solid var(--border-color); */">
+    <div class="sidebar-footer" v-if="user.isLoggedIn" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; border-top: 1px solid var(--border-color);">
       
       border-top: 1px solid var(--border-color);
     }
@@ -1483,9 +1483,9 @@
 
       <div class="player-controls">
         <div class="player-buttons">
-          <button class="player-btn" id="playmode-btn" title="播放模式">🔁</button>
+          <button class="player-btn" id="playmode-btn" data-mode="list" title="播放模式">🔁</button>
           <button class="player-btn" id="prev-btn" title="上一首">⏮️</button>
-          <button class="player-btn play-btn" id="play-btn" title="播放">▶️</button>
+          <button class="player-btn play-btn" id="play-btn" title="播放" data-state="playing">▶️</button>
           <button class="player-btn" id="next-btn" title="下一首">⏭️</button>
         </div>
         <div class="player-progress">
