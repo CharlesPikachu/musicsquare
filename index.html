@@ -1266,6 +1266,34 @@
       display: none;
     }
   </style>
+    /* 播放器按钮风格适配 */
+    .player-btn {
+      width: 40px;
+      height: 40px;
+      border: none;
+      background: var(--bg-input);
+      color: var(--accent);
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+    .player-btn:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+    .play-btn {
+      background: linear-gradient(135deg, var(--accent), #00a080);
+      color: #fff;
+      box-shadow: 0 4px 15px var(--accent-glow);
+    }
+    .play-btn:hover {
+      background: var(--accent-hover);
+    }
+
 </head>
 <body data-theme="light">
   <script>
@@ -1362,12 +1390,7 @@
                 <!-- 示例：<button class='playlist-edit-btn' data-id='1'>编辑</button> -->
 
 
-              <div class="source-multi-toggle">
-                <label style="margin-left:8px;">
-                  <input type="checkbox" id="multi-source-toggle">
-                  <span>多源搜索</span>
-                </label>
-              </div>
+
             </div>
           </div>
         </nav>
@@ -1421,8 +1444,6 @@
             <button class="multi-source-btn" id="multi-source-btn" title="多源搜索" style="margin-left:12px;padding:8px 16px;border-radius:20px;border:none;background:var(--accent);color:#fff;font-size:13px;cursor:pointer;transition:background 0.2s;">多源搜索</button>
             <button class="theme-toggle" id="theme-toggle" title="切换主题">🌙</button>
           </div>
-
-          <button class="theme-toggle" id="theme-toggle" title="切换主题">🌙</button>
         </div>
 
         <div class="content-area" id="content-area">
@@ -1472,6 +1493,34 @@
         </div>
         <div class="player-progress">
           <span class="player-time" id="current-time">0:00</span>
+        /* 播放器按钮风格适配 */
+        .player-btn {
+          width: 40px;
+          height: 40px;
+          border: none;
+          background: var(--bg-input);
+          color: var(--accent);
+          border-radius: 10px;
+          cursor: pointer;
+          font-size: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+        }
+        .player-btn:hover {
+          background: var(--accent);
+          color: #fff;
+        }
+        .play-btn {
+          background: linear-gradient(135deg, var(--accent), #00a080);
+          color: #fff;
+          box-shadow: 0 4px 15px var(--accent-glow);
+        }
+        .play-btn:hover {
+          background: var(--accent-hover);
+        }
+
           <div class="progress-bar" id="progress-bar">
             <div class="progress-fill" id="progress-fill" style="width: 0%">
               <div class="progress-handle"></div>
