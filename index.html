@@ -1395,20 +1395,7 @@
           </div>
         </nav>
 
-        <div class="sidebar-footer">
-          <div class="user-info">
-            <div class="user-avatar" id="user-avatar">U</div>
-              <div id="user-menu" class="user-menu" style="display:none;position:absolute;right:20px;top:60px;z-index:1000;background:#fff;border-radius:8px;box-shadow:0 2px 8px #0002;padding:12px 0;min-width:160px;">
-                <div class="user-menu-item" id="avatar-edit">自定义头像</div>
-                <div class="user-menu-item" id="sync-manage">同步音乐平台</div>
-                <div class="user-menu-item" id="logout-menu">退出登录</div>
-              </div>
-            <span class="user-name" id="user-name">用户</span>
-            <div class="user-actions">
 
-            </div>
-          </div>
-        </div>
       </aside>
 
       <!-- 主内容 -->
@@ -1433,6 +1420,16 @@
             </label>
             <label class="source-chip">
               <input type="checkbox" data-source="migu">
+          <div class="user-info user-info-topbar" style="margin-left:auto;display:flex;align-items:center;gap:12px;position:relative;">
+            <div class="user-avatar" id="user-avatar">U</div>
+            <span class="user-name" id="user-name">用户</span>
+            <div class="user-actions"></div>
+            <div id="user-menu" class="user-menu" style="display:none;position:absolute;top:48px;right:0;z-index:1000;background:#fff;border-radius:8px;box-shadow:0 2px 8px #0002;padding:12px 0;min-width:160px;">
+              <div class="user-menu-item" id="avatar-edit">自定义头像</div>
+              <div class="user-menu-item" id="sync-manage">同步音乐平台</div>
+              <div class="user-menu-item" id="logout-menu">退出登录</div>
+            </div>
+          </div>
               <span class="source-dot migu"></span>
               <span>咪咕</span>
             </label>
