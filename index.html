@@ -1739,6 +1739,17 @@
       return 'normal';
     }
 
+    // ✅ 新增：酷我质量映射（从 kw-api 返回的 quality / url / level.actual 判断）
+    function kuwoQualityToTag(qualityStr, urlStr, actualLevel){
+      const s1=(qualityStr||'').toString().toLowerCase();
+      const s2=(urlStr||'').toString().toLowerCase();
+      const s3=(actualLevel||'').toString().toLowerCase();
+      if (s3==='zp' || s3==='lossless') return 'lossless';
+      if (/flac|lossless|无损|超高/.test(s1)) return 'lossless';
+      if (s2.endsWith('.flac') || s2.includes('.flac?')) return 'lossless';
+      return 'normal';
+    }
+
     // ✅ 替换：网易云搜索改为官方授权 vkeys，且加载更多用 page 正确分页
     async function searchNetease(kw, page, num){
       const url=`https://api.vkeys.cn/v2/music/netease?word=${encodeURIComponent(kw)}&page=${encodeURIComponent(page)}&num=${encodeURIComponent(num)}`;
@@ -1791,13 +1802,21 @@
         for(const it of json.data.results){
           const uid=`${source}-${it.id}`;
           if(state.trackMap.has(uid))continue;
+
+          // ✅ 关键修改（必要）：酷我不直接用 search 返回的 url/lrc，
+          //    强制后续走 kw-api.cenguigui.cn 获取播放/下载链接与歌词
+          const forceKuwoDetail = (source === 'kuwo');
+
           const track={
             uid,source,displayIndex:0,keyword:kw,
             songid:it.id,
             title:it.name||'',artist:it.artist||'',album:it.album||'',
-            cover:it.pic||null,audioUrl:it.url||null,
-            lrc:null,lrcUrl:it.lrc||null,
-            detailsLoaded:!!it.url,quality:'normal'
+            cover:it.pic||null,
+            audioUrl: forceKuwoDetail ? null : (it.url||null),
+            lrc: null,
+            lrcUrl: forceKuwoDetail ? null : (it.lrc||null),
+            detailsLoaded: forceKuwoDetail ? false : !!it.url,
+            quality:'normal'
           };
           state.trackMap.set(uid,track);
           state.searchResults.push(track); added++;
@@ -1888,7 +1907,7 @@
 
     // ✅ 替换：网易云详情
     // - 播放/封面：仍用 meting (qijieya)
-    // - 歌词：改用 vkeys lyric 接口（你给的 https://api.vkeys.cn/v2/music/netease/lyric?id=...）
+    // - 歌词：改用 vkeys lyric 接口
     async function fetchNeteaseDetails(track){
       // 1) meting: 拿播放链接/封面（url/pic）
       const metingApi=`https://api.qijieya.cn/meting/?type=song&id=${encodeURIComponent(track.songid)}`;
@@ -1911,22 +1930,42 @@
         const lj=await lr.json();
         if(lj && lj.code===200 && lj.data){
           track.lrc = lj.data.lrc || track.lrc || null;
-          // track.lrcUrl 不再必须，但保留字段以兼容旧逻辑
           track.lrcUrl = track.lrcUrl || lyricApi;
         }
       }catch(e){
-        // 歌词失败不影响播放
         console.warn('netease(vkeys) lyric fetch failed', e);
       }
 
       track.detailsLoaded=true;
     }
 
-    async function fetchQQKuwoDetails(track){
+    async function fetchQQDetails(track){
       if(track.lrcUrl&&!track.lrc){
         try{const r=await fetch(track.lrcUrl);track.lrc=await r.text();}catch(e){}
       }
       track.detailsLoaded=true;
+    }
+
+    // ✅ 关键新增：酷我播放/下载/歌词用 kw-api.cenguigui.cn
+    async function fetchKuwoDetails(track){
+      const api=`https://kw-api.cenguigui.cn/?id=${encodeURIComponent(track.songid)}&type=song&level=zp&format=json`;
+      const res=await fetch(api);
+      const j=await res.json();
+      if(!j || j.code!==200 || !j.data) throw new Error('kuwo kw-api detail failed');
+
+      const d=j.data;
+      const actual = d.level && d.level.actual ? d.level.actual : '';
+      Object.assign(track,{
+        title:d.name || track.title,
+        artist:d.artist || track.artist,
+        album:d.album || track.album,
+        cover:d.pic || track.cover,
+        audioUrl:d.url || track.audioUrl,
+        lrc: d.lyric || track.lrc || null,
+        lrcUrl: null, // kw-api 已直接返回 lyric 字符串
+        quality: kuwoQualityToTag(d.quality, d.url, actual),
+        detailsLoaded:true
+      });
     }
 
     async function ensureTrackDetails(track){
@@ -1934,7 +1973,8 @@
       dom.playerStatus.textContent=t('playerStatusLoading');
       if(track.source==='migu') await fetchMiguDetails(track);
       else if(track.source==='netease') await fetchNeteaseDetails(track);
-      else await fetchQQKuwoDetails(track);
+      else if(track.source==='kuwo') await fetchKuwoDetails(track);   // ✅ 酷我改这里
+      else await fetchQQDetails(track);
     }
 
     function parseLRC(txt){
@@ -2562,7 +2602,7 @@
         }
       });
 
-      // 现在监听 playlist-main 的滚动，实现“滚动到底加载更多”
+      // 监听 playlist-main 的滚动，实现“滚动到底加载更多”
       dom.playlistMain.addEventListener('scroll',()=>{
         const activeTab=document.querySelector('.playlist-tab.active')?.dataset.tab||'results';
         if(activeTab!=='results')return;
