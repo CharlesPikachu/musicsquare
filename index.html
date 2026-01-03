@@ -1705,10 +1705,11 @@
     }
 
     async function searchMigu(kw,limit){
-      const url=`https://api-v1.cenguigui.cn/api/music/mgmusic_lingsheng.php?msg=${encodeURIComponent(kw)}&limit=${encodeURIComponent(limit)}&n=`;
+      const url=`https://api.xcvts.cn/api/music/migu?gm=${encodeURIComponent(kw)}&n=&num=${encodeURIComponent(limit)}&type=json`;
       let added=0;
       try{
-        const res=await fetch(url); const json=await res.json();
+        const res=await fetch(url);
+        const json=await res.json();
         if(json.code!==200||!Array.isArray(json.data))return 0;
         for(const it of json.data){
           const n=it.n;
@@ -1716,6 +1717,7 @@
           if(state.trackMap.has(uid))continue;
           const track={
             uid,source:'migu',displayIndex:n||0,keyword:kw,
+            requestNum: limit,
             title:it.title||'',artist:it.singer||'',album:'',
             cover:null,audioUrl:null,lrc:null,lrcUrl:null,
             detailsLoaded:false,quality:'normal'
@@ -1822,20 +1824,27 @@
     }
 
     async function fetchMiguDetails(track){
-      const url=`https://api-v1.cenguigui.cn/api/mg_music/?msg=${encodeURIComponent(track.keyword)}&n=${encodeURIComponent(track.displayIndex||1)}&type=json&br=1`;
-      const res=await fetch(url); const j=await res.json();
-      if(j.code!==200||!j.data)throw new Error('migu detail');
-      const d=j.data;
+      const num = track.requestNum || state.perSourceCurrentLimit.migu || state.perSourceLimit || 20;
+      const url=`https://api.xcvts.cn/api/music/migu?gm=${encodeURIComponent(track.keyword)}&n=${encodeURIComponent(track.displayIndex||1)}&num=${encodeURIComponent(num)}&type=json`;
+      const res=await fetch(url);
+      const j=await res.json();
+      if(j.code!==200) throw new Error('migu detail');
+
       Object.assign(track,{
-        title:d.title||track.title,
-        artist:d.singer||track.artist,
-        cover:d.cover||track.cover,
-        audioUrl:d.music_url||track.audioUrl,
-        lrcUrl:d.lrc_url||track.lrcUrl,
+        title:j.title||track.title,
+        artist:j.singer||track.artist,
+        cover:j.cover||track.cover,
+        audioUrl:j.music_url||track.audioUrl,
+        lrcUrl:j.lrc_url||track.lrcUrl,
+        pageUrl:j.link||track.pageUrl,
         detailsLoaded:true
       });
-      if(track.lrcUrl&&!track.lrc){
-        try{const r=await fetch(track.lrcUrl);track.lrc=await r.text();}catch(e){}
+
+      if(track.lrcUrl && !track.lrc){
+        try{
+          const r=await fetch(track.lrcUrl);
+          track.lrc=await r.text();
+        }catch(e){}
       }
     }
 
