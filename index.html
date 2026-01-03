@@ -1632,6 +1632,9 @@
       enabledSources:{migu:true, netease:true, qq:true, kuwo:true},
       perSourceLimit:10,
       perSourceCurrentLimit:{migu:10, netease:10, qq:10, kuwo:10},
+      // ✅ 仅为“正确加载更多（分页）”新增：网易云使用 page；其他源保持原逻辑（加大 num 再去重）
+      perSourcePage:{migu:1, netease:1, qq:1, kuwo:1},
+
       searchKeyword:'',
       searchResults:[],
       trackMap:new Map(),
@@ -1729,26 +1732,53 @@
       return added;
     }
 
-    async function searchNetease(kw,limit){
-      const url=`https://api-v1.cenguigui.cn/api/music/netease/WyY_Dg.php?type=json&msg=${encodeURIComponent(kw)}&num=${encodeURIComponent(limit)}&n=`;
+    // ✅ 新增：把网易云的 quality 字段映射到 UI 的 “lossless” 标签（仅用于显示）
+    function neteaseQualityToTag(q){
+      const s = (q || '').toString().toLowerCase();
+      if (/lossless|无损|flac|ape|wav|hi-?res|sq|臻品|臻音|高清臻音|spatial/.test(s)) return 'lossless';
+      return 'normal';
+    }
+
+    // ✅ 替换：网易云搜索改为官方授权 vkeys，且加载更多用 page 正确分页
+    async function searchNetease(kw, page, num){
+      const url=`https://api.vkeys.cn/v2/music/netease?word=${encodeURIComponent(kw)}&page=${encodeURIComponent(page)}&num=${encodeURIComponent(num)}`;
       let added=0;
       try{
-        const res=await fetch(url); const json=await res.json();
+        const res=await fetch(url);
+        const json=await res.json();
         if(json.code!==200||!Array.isArray(json.data))return 0;
-        for(const it of json.data){
-          const uid=`netease-${it.songid}`;
-          if(state.trackMap.has(uid))continue;
+
+        json.data.forEach((it, idx)=>{
+          const songId = it.id;
+          const uid=`netease-${songId}`;
+          if(state.trackMap.has(uid))return;
+
           const track={
-            uid,source:'netease',displayIndex:it.n||0,keyword:kw,
-            songid:it.songid,
-            title:it.title||'',artist:it.singer||'',album:'',
-            cover:null,audioUrl:null,lrc:null,lrcUrl:null,
-            detailsLoaded:false,quality:'lossless'
+            uid,
+            source:'netease',
+            // 用于分组排序：把 page 信息算进去，保证顺序稳定
+            displayIndex:(Math.max(1,page)-1)*Math.max(1,num) + (idx+1),
+            keyword:kw,
+
+            songid:songId,
+            title:it.song||'',
+            artist:it.singer||'',
+            album:it.album||'',
+
+            cover:it.cover||null,
+            audioUrl:null,
+            lrc:null,
+            lrcUrl:null,
+
+            detailsLoaded:false,
+            quality: neteaseQualityToTag(it.quality)
           };
           state.trackMap.set(uid,track);
-          state.searchResults.push(track); added++;
-        }
-      }catch(e){console.error('netease',e);}
+          state.searchResults.push(track);
+          added++;
+        });
+
+      }catch(e){console.error('netease(vkeys)',e);}
       return added;
     }
 
@@ -1786,6 +1816,10 @@
       if(reset){
         Object.keys(state.perSourceCurrentLimit)
           .forEach(k=>state.perSourceCurrentLimit[k]=state.perSourceLimit);
+
+        // ✅ 重置分页：网易云回到第 1 页
+        Object.keys(state.perSourcePage).forEach(k=>state.perSourcePage[k]=1);
+
         state.searchResults=[];
         state.trackMap.clear();
         state.noMoreResults=false;
@@ -1795,8 +1829,12 @@
       const tasks=[];
       for(const s of enabled){
         const limit=state.perSourceCurrentLimit[s]||state.perSourceLimit;
+
         if(s==='migu')tasks.push(searchMigu(kw,limit));
-        if(s==='netease')tasks.push(searchNetease(kw,limit));
+
+        // ✅ 网易云：用 page + num（每页 num=perSourceLimit）
+        if(s==='netease')tasks.push(searchNetease(kw, state.perSourcePage.netease || 1, state.perSourceLimit));
+
         if(s==='qq')tasks.push(searchQQKuwo(kw,limit,'qq'));
         if(s==='kuwo')tasks.push(searchQQKuwo(kw,limit,'kuwo'));
       }
@@ -1848,21 +1886,40 @@
       }
     }
 
+    // ✅ 替换：网易云详情
+    // - 播放/封面：仍用 meting (qijieya)
+    // - 歌词：改用 vkeys lyric 接口（你给的 https://api.vkeys.cn/v2/music/netease/lyric?id=...）
     async function fetchNeteaseDetails(track){
-      const url=`https://api.cenguigui.cn/api/netease/music_v1.php?id=${encodeURIComponent(track.songid)}&type=json&level=lossless`;
-      const res=await fetch(url); const j=await res.json();
-      if(j.code!==200||!j.data)throw new Error('netease detail');
-      const d=j.data;
+      // 1) meting: 拿播放链接/封面（url/pic）
+      const metingApi=`https://api.qijieya.cn/meting/?type=song&id=${encodeURIComponent(track.songid)}`;
+      const res=await fetch(metingApi);
+      const j=await res.json();
+      if(!Array.isArray(j) || !j.length) throw new Error('netease meting detail empty');
+
+      const d=j[0]||{};
       Object.assign(track,{
         title:d.name||track.title,
         artist:d.artist||track.artist,
-        album:d.album||track.album,
-        cover:d.pic||track.cover,
         audioUrl:d.url||track.audioUrl,
-        lrc:d.lyric||track.lrc,
-        detailsLoaded:true,
-        quality:(d.format&&d.format.includes('无损'))?'lossless':'normal'
+        cover:d.pic||track.cover
       });
+
+      // 2) vkeys: 拿歌词（data.lrc）
+      const lyricApi=`https://api.vkeys.cn/v2/music/netease/lyric?id=${encodeURIComponent(track.songid)}`;
+      try{
+        const lr=await fetch(lyricApi);
+        const lj=await lr.json();
+        if(lj && lj.code===200 && lj.data){
+          track.lrc = lj.data.lrc || track.lrc || null;
+          // track.lrcUrl 不再必须，但保留字段以兼容旧逻辑
+          track.lrcUrl = track.lrcUrl || lyricApi;
+        }
+      }catch(e){
+        // 歌词失败不影响播放
+        console.warn('netease(vkeys) lyric fetch failed', e);
+      }
+
+      track.detailsLoaded=true;
     }
 
     async function fetchQQKuwoDetails(track){
@@ -2297,9 +2354,17 @@
     function requestMoreResults(){
       const enabled=Object.keys(state.enabledSources).filter(k=>state.enabledSources[k]);
       if(!enabled.length)return;
+
       enabled.forEach(src=>{
-        state.perSourceCurrentLimit[src]=(state.perSourceCurrentLimit[src]||state.perSourceLimit)+state.perSourceLimit;
+        if(src==='netease'){
+          // ✅ 网易云：正确分页，加载下一页
+          state.perSourcePage.netease = (state.perSourcePage.netease || 1) + 1;
+        }else{
+          // 其他源：保持原逻辑（扩大 num 然后去重）
+          state.perSourceCurrentLimit[src]=(state.perSourceCurrentLimit[src]||state.perSourceLimit)+state.perSourceLimit;
+        }
       });
+
       searchAllSources(false);
     }
 
@@ -2476,9 +2541,16 @@
       dom.loadMoreBtn.addEventListener('click',()=>{
         const enabled=Object.keys(state.enabledSources).filter(k=>state.enabledSources[k]);
         if(!enabled.length){showToast(t('searchStatusNoSource'));return;}
+
         enabled.forEach(s=>{
-          state.perSourceCurrentLimit[s]=(state.perSourceCurrentLimit[s]||state.perSourceLimit)+state.perSourceLimit;
+          if(s==='netease'){
+            // ✅ 网易云：正确分页
+            state.perSourcePage.netease = (state.perSourcePage.netease || 1) + 1;
+          }else{
+            state.perSourceCurrentLimit[s]=(state.perSourceCurrentLimit[s]||state.perSourceLimit)+state.perSourceLimit;
+          }
         });
+
         state.noMoreResults=false;
         searchAllSources(false);
       });
