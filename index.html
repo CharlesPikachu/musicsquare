@@ -2383,36 +2383,29 @@
 
     function handleDownloadCurrent(){
       const tr = state.currentTrack;
-      if (!tr || !tr.audioUrl) {
+
+      if (!tr) {
+        showToast(t('toastNoCurrentTrack'));
+        return;
+      }
+
+      let url = null;
+
+      if (tr.source === 'qq') {
+        // QQ：优先跳转到 QQ 官方播放页，体验更稳定
+        url = tr.pageUrl || tr.audioUrl || null;
+      } else {
+        // 其他源：保持原来的行为，直接打开音频链接
+        url = tr.audioUrl || null;
+      }
+
+      if (!url) {
         showToast(t('toastDownloadNotReady'));
         return;
       }
 
-      try {
-        // 用 a[download] 方式触发下载，比 window.open 更稳定
-        const a = document.createElement('a');
-        a.href = tr.audioUrl;
-
-        // 简单处理一下文件名（去掉非法字符）
-        const safeTitle = (tr.title || 'song')
-          .replace(/[\\/:*?"<>|]+/g, '_')
-          .slice(0, 50);
-
-        const base = tr.audioUrl.split('?')[0];
-        const extMatch = base.match(/\.([a-z0-9]+)$/i);
-        const ext = extMatch ? ('.' + extMatch[1]) : '';
-
-        a.download = safeTitle + ext;
-        a.style.display = 'none';
-
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      } catch (e) {
-        console.error('download error', e);
-        // 兜底：如果 download 方式出错，再退回到原来的 window.open
-        window.open(tr.audioUrl, '_blank');
-      }
+      // 新标签页打开，不影响当前页面
+      window.open(url, '_blank');
     }
 
     function addCurrentToPlaylist(){
