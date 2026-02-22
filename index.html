@@ -1809,34 +1809,38 @@
       return added;
     }
 
-    // QQ 搜索：使用咸鱼 QQ 音乐搜索 API（只拿列表，不拿 url）
-    async function searchQQ(kw, limit){
-      const QQ_API_KEY = 'sk-62cdb03e2270eb3968cca7881399f412';
+    // QQ 搜索：使用 tang 的 QQ 音乐搜索 API（只拿列表，不拿 url）
+    async function searchQQ(kw, limit) {
+    // 新接口：返回直接是数组（或有些情况下可能包一层 data，下面做了兼容）
+    const url =
+        `https://tang.api.s01s.cn/music_open_api.php` +
+        `?msg=${encodeURIComponent(kw)}` +
+        `&type=json`;
 
-      // 搜索接口：不带 n，返回 data 为数组
-      const url =
-        `https://apii.xianyuw.cn/api/v1/qq-music-search` +
-        `?key=${encodeURIComponent(QQ_API_KEY)}` +
-        `&msg=${encodeURIComponent(kw)}` +
-        `&br=hires&no_url=0`;
+    let added = 0;
 
-      let added = 0;
-      try {
+    try {
         const res = await fetch(url);
         const json = await res.json();
 
-        if (json.code !== 200 || !Array.isArray(json.data)) return 0;
+        // 兼容：既支持直接数组，也支持 { data: [...] } 这种包装
+        const data = Array.isArray(json) ? json : (Array.isArray(json?.data) ? json.data : []);
+        if (!Array.isArray(data) || data.length === 0) return 0;
 
         // 按 limit 截断
-        const list = json.data.slice(0, limit || json.data.length);
+        const list = data.slice(0, limit || data.length);
 
         list.forEach((it, idx) => {
-          const uid = `qq-${it.id}`;
-          if (state.trackMap.has(uid)) return;
+        // 新接口里唯一标识是 song_mid
+        const mid = it.song_mid;
+        if (!mid) return;
 
-          const indexInList = idx + 1;  // 1-based，对应接口里的 n
+        const uid = `qq-${mid}`;
+        if (state.trackMap.has(uid)) return;
 
-          const track = {
+        const indexInList = idx + 1; // 1-based：作为 qqIndex / displayIndex
+
+        const track = {
             uid,
             source: 'qq',
 
@@ -1847,18 +1851,19 @@
             keyword: kw,
             qqSearchKey: kw,
 
-            // 这首在 QQ 搜索结果里的序号，用作 n
+            // 这首在 QQ 搜索结果里的序号，用作 n（如果你后续详情接口仍需要 n）
             qqIndex: indexInList,
 
-            // 一些元信息
-            qqId: it.id,
-            songid: it.id, // 保留旧字段名以防别处用到
+            // 元信息
+            qqId: mid,
+            songid: mid, // 保留旧字段名以防别处用到
+            songMid: mid, // 可选：更语义化的字段
 
-            title: it.title || '',
-            artist: it.author || '',
-            album: it.desc || '',
+            title: it.song_title || '',
+            artist: it.singer_name || '',
+            album: '',
 
-            cover: it.cover || null,
+            cover: null, // 新接口没给封面
 
             // 搜索阶段没有 url 和 lrc
             audioUrl: null,
@@ -1869,18 +1874,21 @@
 
             quality: null,
             qualityLabel: null,
-            qqQualityText: it.quality || null
-          };
 
-          state.trackMap.set(uid, track);
-          state.searchResults.push(track);
-          added++;
+            // 新接口返回 pay（如“付费”）
+            qqQualityText: it.pay || null,
+            pay: it.pay || null
+        };
+
+        state.trackMap.set(uid, track);
+        state.searchResults.push(track);
+        added++;
         });
+    } catch (e) {
+        console.error('qq search (tang)', e);
+    }
 
-      } catch (e) {
-        console.error('qq search (xianyuw)', e);
-      }
-      return added;
+    return added;
     }
 
     // 酷我搜索
