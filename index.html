@@ -2057,75 +2057,92 @@
       track.detailsLoaded=true;
     }
 
-    // QQ 详情：根据搜索时的关键词 + 搜索结果序号 qqIndex 拿 url + lrc
-    async function fetchQQDetails(track){
-      const QQ_API_KEY = 'sk-62cdb03e2270eb3968cca7881399f412';
-
-      // 优先用搜索时用过的关键词，保证和原始排序一致
-      const msg =
+    // QQ 详情：根据搜索时的关键词 + song_mid(mid) 拿 url + lrc（tang API）
+    async function fetchQQDetails(track) {
+    // 优先用搜索时用过的关键词，保证和原始排序一致
+    const msg =
         (track.qqSearchKey || track.keyword || '').trim() ||
         ((track.title || '') + ' ' + (track.artist || '')).trim();
 
-      // n = 第几首：优先 qqIndex，其次 displayIndex，最后兜底 1
-      const n =
-        track.qqIndex ||
-        track.displayIndex ||
-        1;
+    // 新接口用 mid：优先 qqId/songMid/songid
+    const mid =
+        (track.qqId || track.songMid || track.songid || '').toString().trim();
 
-      const url =
-        `https://apii.xianyuw.cn/api/v1/qq-music-search` +
-        `?key=${encodeURIComponent(QQ_API_KEY)}` +
-        `&msg=${encodeURIComponent(msg)}` +
-        `&n=${encodeURIComponent(n)}` +
-        `&br=hires&no_url=0`;
+    if (!mid) return;
 
-      try {
+    const url =
+        `https://tang.api.s01s.cn/music_open_api.php` +
+        `?msg=${encodeURIComponent(msg)}` +
+        `&type=json` +
+        `&mid=${encodeURIComponent(mid)}`;
+
+    // 选择一个“最好”的播放链接（你也可以按需改优先级）
+    function pickBestPlayUrl(d) {
+        // lossless
+        if (d.song_play_url_sq) return { url: d.song_play_url_sq, tag: 'lossless', label: 'LOSSLESS', text: `SQ ${d.kbps_sq || ''}`.trim() };
+        if (d.song_play_url_pq) return { url: d.song_play_url_pq, tag: 'lossless', label: 'LOSSLESS', text: `PQ ${d.kbps_pq || ''}`.trim() };
+
+        // other variants
+        if (d.song_play_url_accom) return { url: d.song_play_url_accom, tag: 'hq', label: 'HQ', text: `ACCOM ${d.kbps_accom || ''}`.trim() };
+        if (d.song_play_url_hq) return { url: d.song_play_url_hq, tag: 'hq', label: 'HQ', text: `HQ ${d.kbps_hq || ''}`.trim() };
+
+        if (d.song_play_url_standard) return { url: d.song_play_url_standard, tag: 'standard', label: 'STD', text: `STD ${d.kbps_standard || ''}`.trim() };
+        if (d.song_play_url_fq) return { url: d.song_play_url_fq, tag: 'low', label: 'LOW', text: `FQ ${d.kbps_fq || ''}`.trim() };
+
+        // fallback
+        if (d.song_play_url) return { url: d.song_play_url, tag: null, label: null, text: null };
+
+        return { url: null, tag: null, label: null, text: null };
+    }
+
+    try {
         const res = await fetch(url);
-        const json = await res.json();
-        if (json.code !== 200 || !json.data) {
-          throw new Error('qq detail error');
-        }
+        const d = await res.json();
 
-        const d = json.data;
+        // 基本校验：必须是对象且有 song_mid
+        if (!d || typeof d !== 'object' || !d.song_mid) {
+        throw new Error('qq detail error (invalid response)');
+        }
 
         // 更新基础信息
-        track.title   = d.title  || track.title;
-        track.artist  = d.author || track.artist;
-        track.cover   = d.cover  || track.cover;
-        track.pageUrl = d.link   || track.pageUrl;
+        track.title   = d.song_title || d.song_name || track.title;
+        track.artist  = d.singer_name || track.artist;
+        track.album   = d.album_name || d.album_title || track.album || '';
+        track.cover   = d.album_pic || d.singer_pic || track.cover;
+        track.pageUrl = d.song_h5_url || track.pageUrl;
 
-        // 播放链接 + 歌词
-        track.audioUrl = d.url || track.audioUrl;
-        track.lrc      = d.lrc || track.lrc;
+        // 播放链接（按优先级挑一个）
+        const best = pickBestPlayUrl(d);
+        track.audioUrl = best.url || track.audioUrl;
 
-        track.qqQualityText = d.quality || track.qqQualityText;
+        // 歌词
+        track.lrc = d.song_lyric || d.lyric || track.lrc;
 
-        // 根据 quality 粗略判断一遍
-        if (d.quality) {
-          if (/hires|无损|flac|ape|wav/i.test(d.quality)) {
-            track.quality = 'lossless';
-            track.qualityLabel = 'LOSSLESS';
-          } else {
-            track.quality = '320k';
-            track.qualityLabel = '320K';
-          }
+        // 文本信息（你原来用 qqQualityText，这里塞 vip + kbps/size 等）
+        track.qqQualityText =
+        best.text ||
+        (d.vip ? `VIP:${d.vip}` : null) ||
+        track.qqQualityText;
+
+        // quality / label：先用我们自己的选择，再用你已有 inferQualityFromUrl 兜底
+        if (best.tag && best.label) {
+        track.quality = best.tag;
+        track.qualityLabel = best.label;
         }
 
-        // 再用 url 后缀兜底判断音质（你已有 inferQualityFromUrl）
         if (track.audioUrl) {
-          const q = inferQualityFromUrl(track.audioUrl);
-          if (q && q.label) {
+        const q = inferQualityFromUrl(track.audioUrl);
+        if (q && q.label) {
             track.quality = q.tag;
             track.qualityLabel = q.label;
-          }
+        }
         }
 
         track.detailsLoaded = true;
-
-      } catch (e) {
-        console.error('qq detail (xianyuw)', e);
+    } catch (e) {
+        console.error('qq detail (tang)', e);
         // 失败的话不要把 detailsLoaded 置 true，下次还有机会重试
-      }
+    }
     }
 
     async function fetchKuwoDetails(track){
