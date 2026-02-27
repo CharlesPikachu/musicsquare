@@ -2569,6 +2569,8 @@
           updateMainFavButton();
         });
 
+        act.appendChild(pBtn);
+        act.appendChild(fBtn);
         item.appendChild(index);item.appendChild(meta);item.appendChild(act);
         item.addEventListener('click',()=>pBtn.click());
         wrap.appendChild(item);
