@@ -1809,86 +1809,84 @@
       return added;
     }
 
-    // QQ 搜索：使用 tang 的 QQ 音乐搜索 API（只拿列表，不拿 url）
+    // QQ 搜索：使用 vkeys（参考 qqmusic.py）
     async function searchQQ(kw, limit) {
-    // 新接口：返回直接是数组（或有些情况下可能包一层 data，下面做了兼容）
-    const url =
-        `https://tang.api.s01s.cn/music_open_api.php` +
-        `?msg=${encodeURIComponent(kw)}` +
-        `&type=json`;
+      const num = Math.max(1, parseInt(limit, 10) || 10);
+      let added = 0;
 
-    let added = 0;
+      function normalizeQQSearchList(json){
+        if(Array.isArray(json)) return json;
+        if(Array.isArray(json?.data)) return json.data;
+        if(Array.isArray(json?.result?.list)) return json.result.list;
+        if(Array.isArray(json?.result?.data)) return json.result.data;
+        if(Array.isArray(json?.song?.list)) return json.song.list;
+        if(Array.isArray(json?.songs)) return json.songs;
+        return [];
+      }
 
-    try {
+      const url = `https://api.vkeys.cn/v2/music/tencent?word=${encodeURIComponent(kw)}&page=1&num=${encodeURIComponent(num)}`;
+      let list = [];
+      try{
         const res = await fetch(url);
         const json = await res.json();
+        const data = normalizeQQSearchList(json);
+        if(data.length){
+          list = data.slice(0, num);
+        }
+      }catch(e){
+        console.warn('qq search(vkeys) failed', e);
+      }
+      if(!list.length) return 0;
 
-        // 兼容：既支持直接数组，也支持 { data: [...] } 这种包装
-        const data = Array.isArray(json) ? json : (Array.isArray(json?.data) ? json.data : []);
-        if (!Array.isArray(data) || data.length === 0) return 0;
-
-        // 按 limit 截断
-        const list = data.slice(0, limit || data.length);
-
-        list.forEach((it, idx) => {
-        // 新接口里唯一标识是 song_mid
-        const mid = it.song_mid;
-        if (!mid) return;
+      list.forEach((it, idx) => {
+        const mid = (it.mid || it.song_mid || it.songmid || '').toString().trim();
+        if(!mid) return;
 
         const uid = `qq-${mid}`;
-        if (state.trackMap.has(uid)) return;
+        if(state.trackMap.has(uid)) return;
 
-        const indexInList = idx + 1; // 1-based：作为 qqIndex / displayIndex
+        const singerList = Array.isArray(it.singer_list) ? it.singer_list : [];
+        const artistFromList = singerList
+          .map(s => (s && (s.name || s.title)) || '')
+          .filter(Boolean)
+          .join('/');
+        const indexInList = Number(it.n) || (idx + 1);
 
         const track = {
-            uid,
-            source: 'qq',
+          uid,
+          source:'qq',
+          displayIndex:indexInList,
 
-            // 用于交错显示的排序
-            displayIndex: indexInList,
+          keyword:kw,
+          qqSearchKey:kw,
+          qqIndex:indexInList,
 
-            // 记录检索关键词（详情再请求要用同一个 msg）
-            keyword: kw,
-            qqSearchKey: kw,
+          qqId:mid,
+          songid:mid,
+          songMid:mid,
 
-            // 这首在 QQ 搜索结果里的序号，用作 n（如果你后续详情接口仍需要 n）
-            qqIndex: indexInList,
+          title:it.song || it.song_title || it.songname || it.name || '',
+          artist:it.singer || it.singer_name || artistFromList || '',
+          album:it.album || it.album_name || it.album_title || '',
 
-            // 元信息
-            qqId: mid,
-            songid: mid, // 保留旧字段名以防别处用到
-            songMid: mid, // 可选：更语义化的字段
+          cover:it.cover || it.album_pic || it.pic || null,
+          audioUrl:null,
+          lrc:null,
+          lrcUrl:null,
+          detailsLoaded:false,
 
-            title: it.song_title || '',
-            artist: it.singer_name || '',
-            album: '',
-
-            cover: null, // 新接口没给封面
-
-            // 搜索阶段没有 url 和 lrc
-            audioUrl: null,
-            lrc: null,
-            lrcUrl: null,
-
-            detailsLoaded: false,
-
-            quality: null,
-            qualityLabel: null,
-
-            // 新接口返回 pay（如“付费”）
-            qqQualityText: it.pay || null,
-            pay: it.pay || null
+          quality:null,
+          qualityLabel:null,
+          qqQualityText:it.quality || it.pay || null,
+          pay:it.pay || null
         };
 
         state.trackMap.set(uid, track);
         state.searchResults.push(track);
         added++;
-        });
-    } catch (e) {
-        console.error('qq search (tang)', e);
-    }
+      });
 
-    return added;
+      return added;
     }
 
     // 酷我搜索
@@ -2057,92 +2055,77 @@
       track.detailsLoaded=true;
     }
 
-    // QQ 详情：根据搜索时的关键词 + song_mid(mid) 拿 url + lrc（tang API）
+    // QQ 详情：使用 vkeys
     async function fetchQQDetails(track) {
-    // 优先用搜索时用过的关键词，保证和原始排序一致
-    const msg =
-        (track.qqSearchKey || track.keyword || '').trim() ||
-        ((track.title || '') + ' ' + (track.artist || '')).trim();
+      const mid = (track.qqId || track.songMid || track.songid || '').toString().trim();
+      if(!mid) return;
 
-    // 新接口用 mid：优先 qqId/songMid/songid
-    const mid =
-        (track.qqId || track.songMid || track.songid || '').toString().trim();
+      function applyQQCommonMeta(d){
+        if(!d || typeof d !== 'object') return;
+        track.title = d.song || d.song_title || d.song_name || track.title;
+        track.artist = d.singer || d.singer_name || track.artist;
+        track.album = d.album || d.album_name || d.album_title || track.album || '';
+        track.cover = d.cover || d.album_pic || d.singer_pic || track.cover;
+        track.pageUrl = d.link || d.song_h5_url || track.pageUrl;
+      }
 
-    if (!mid) return;
+      async function fetchByVkeys(){
+        const qualityOrder = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
+        let detail = null;
 
-    const url =
-        `https://tang.api.s01s.cn/music_open_api.php` +
-        `?msg=${encodeURIComponent(msg)}` +
-        `&type=json` +
-        `&mid=${encodeURIComponent(mid)}`;
-
-    // 选择一个“最好”的播放链接（你也可以按需改优先级）
-    function pickBestPlayUrl(d) {
-        // lossless
-        if (d.song_play_url_sq) return { url: d.song_play_url_sq, tag: 'lossless', label: 'LOSSLESS', text: `SQ ${d.kbps_sq || ''}`.trim() };
-        if (d.song_play_url_pq) return { url: d.song_play_url_pq, tag: 'lossless', label: 'LOSSLESS', text: `PQ ${d.kbps_pq || ''}`.trim() };
-
-        // other variants
-        if (d.song_play_url_accom) return { url: d.song_play_url_accom, tag: 'hq', label: 'HQ', text: `ACCOM ${d.kbps_accom || ''}`.trim() };
-        if (d.song_play_url_hq) return { url: d.song_play_url_hq, tag: 'hq', label: 'HQ', text: `HQ ${d.kbps_hq || ''}`.trim() };
-
-        if (d.song_play_url_standard) return { url: d.song_play_url_standard, tag: 'standard', label: 'STD', text: `STD ${d.kbps_standard || ''}`.trim() };
-        if (d.song_play_url_fq) return { url: d.song_play_url_fq, tag: 'low', label: 'LOW', text: `FQ ${d.kbps_fq || ''}`.trim() };
-
-        // fallback
-        if (d.song_play_url) return { url: d.song_play_url, tag: null, label: null, text: null };
-
-        return { url: null, tag: null, label: null, text: null };
-    }
-
-    try {
-        const res = await fetch(url);
-        const d = await res.json();
-
-        // 基本校验：必须是对象且有 song_mid
-        if (!d || typeof d !== 'object' || !d.song_mid) {
-        throw new Error('qq detail error (invalid response)');
+        for(const q of qualityOrder){
+          const api = `https://api.vkeys.cn/v2/music/tencent/geturl?mid=${encodeURIComponent(mid)}&quality=${encodeURIComponent(q)}`;
+          try{
+            const res = await fetch(api);
+            const j = await res.json();
+            const d = j && j.code === 200 ? j.data : null;
+            if(d && d.url && /^https?:\/\//i.test(d.url)){
+              detail = d;
+              break;
+            }
+          }catch(e){}
         }
 
-        // 更新基础信息
-        track.title   = d.song_title || d.song_name || track.title;
-        track.artist  = d.singer_name || track.artist;
-        track.album   = d.album_name || d.album_title || track.album || '';
-        track.cover   = d.album_pic || d.singer_pic || track.cover;
-        track.pageUrl = d.song_h5_url || track.pageUrl;
-
-        // 播放链接（按优先级挑一个）
-        const best = pickBestPlayUrl(d);
-        track.audioUrl = best.url || track.audioUrl;
-
-        // 歌词
-        track.lrc = d.song_lyric || d.lyric || track.lrc;
-
-        // 文本信息（你原来用 qqQualityText，这里塞 vip + kbps/size 等）
-        track.qqQualityText =
-        best.text ||
-        (d.vip ? `VIP:${d.vip}` : null) ||
-        track.qqQualityText;
-
-        // quality / label：先用我们自己的选择，再用你已有 inferQualityFromUrl 兜底
-        if (best.tag && best.label) {
-        track.quality = best.tag;
-        track.qualityLabel = best.label;
+        if(!detail){
+          const api = `https://api.vkeys.cn/v2/music/tencent/geturl?mid=${encodeURIComponent(mid)}`;
+          const res = await fetch(api);
+          const j = await res.json();
+          const d = j && j.code === 200 ? j.data : null;
+          if(d && d.url && /^https?:\/\//i.test(d.url)){
+            detail = d;
+          }
         }
+        if(!detail) throw new Error('qq detail(vkeys) no playable url');
 
-        if (track.audioUrl) {
-        const q = inferQualityFromUrl(track.audioUrl);
-        if (q && q.label) {
+        applyQQCommonMeta(detail);
+        track.audioUrl = detail.url || track.audioUrl;
+        track.qqQualityText = detail.quality || detail.kbps || track.qqQualityText;
+        if(track.audioUrl){
+          const q = inferQualityFromUrl(track.audioUrl);
+          if(q && q.label){
             track.quality = q.tag;
             track.qualityLabel = q.label;
-        }
+          }
         }
 
-        track.detailsLoaded = true;
-    } catch (e) {
-        console.error('qq detail (tang)', e);
-        // 失败的话不要把 detailsLoaded 置 true，下次还有机会重试
-    }
+        try{
+          const lyricApi = `https://api.vkeys.cn/v2/music/tencent/lyric?mid=${encodeURIComponent(mid)}`;
+          const lr = await fetch(lyricApi);
+          const lj = await lr.json();
+          if(lj && lj.code === 200 && lj.data){
+            track.lrc = lj.data.lrc || track.lrc;
+            track.lrcUrl = lyricApi;
+          }
+        }catch(e){
+          console.warn('qq lyric(vkeys) fetch failed', e);
+        }
+        track.detailsLoaded = !!track.audioUrl;
+      }
+      try{
+        await fetchByVkeys();
+      }catch(e){
+        console.error('qq detail(vkeys) failed', e);
+      }
     }
 
     async function fetchKuwoDetails(track){
