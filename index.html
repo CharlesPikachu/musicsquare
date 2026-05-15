@@ -1402,6 +1402,7 @@
                 <select id="playlist-select"></select>
                 <button id="add-current-btn" class="btn btn-secondary btn-icon ripple-target" title="把当前歌曲加入歌单">＋</button>
                 <button id="new-playlist-btn" class="btn btn-ghost ripple-target" data-i18n="newPlaylist">新建歌单</button>
+                <button id="export-playlist-btn" class="btn btn-ghost ripple-target" data-i18n="exportPlaylist">导出歌单</button>
               </div>
               <div class="playmode-row">
                 <button class="playmode-btn active ripple-target" data-mode="list" title="列表循环">🔁</button>
@@ -1538,6 +1539,7 @@
         playlistInfoFavorites:"收藏列表",
         playlistInfoPlaylist:"歌单",
         newPlaylist:"新建歌单",
+        exportPlaylist:"导出歌单",
         footerText:"本站仅作为学习演示，音乐版权归各平台与原作者所有。",
         toastAddedFavorite:"已添加到收藏",
         toastRemovedFavorite:"已从收藏移除",
@@ -1550,6 +1552,8 @@
         toastLyricStyleSwitched:"已切换歌词炫酷效果。",
         toastDownloadNotReady:"当前歌曲还未加载完成，稍后再试。",
         toastPlaylistCreated:"歌单创建成功。",
+        toastPlaylistExported:"已导出歌单文件。",
+        toastPlaylistExportEmpty:"暂无可导出的歌单。",
         toastPlaylistEmpty:"当前歌单为空，先添加几首歌吧~",
         toastPlaymodeList:"播放模式：列表循环",
         toastPlaymodeSingle:"播放模式：单曲循环",
@@ -1607,6 +1611,7 @@
         playlistInfoFavorites:"Favorites List",
         playlistInfoPlaylist:"Playlist",
         newPlaylist:"Create",
+        exportPlaylist:"Export",
         footerText:"For demo only. All music copyrights belong to original owners.",
         toastAddedFavorite:"Added to favorites",
         toastRemovedFavorite:"Removed from favorites",
@@ -1619,6 +1624,8 @@
         toastLyricStyleSwitched:"Lyrics FX toggled.",
         toastDownloadNotReady:"Song not fully loaded yet. Try again later.",
         toastPlaylistCreated:"Playlist created.",
+        toastPlaylistExported:"Playlist file exported.",
+        toastPlaylistExportEmpty:"No playlist to export.",
         toastPlaylistEmpty:"Playlist is empty. Add some songs first.",
         toastPlaymodeList:"Play mode: list loop",
         toastPlaymodeSingle:"Play mode: single loop",
@@ -1639,7 +1646,7 @@
 
     const state = {
       language:'zh',
-      enabledSources:{migu:true, netease:true, qq:true, kuwo:true, joox:true},
+      enabledSources:{migu:true, netease:true, qq:true, kuwo:true, joox:false},
       perSourceLimit:10,
       perSourceCurrentLimit:{migu:10, netease:10, qq:10, kuwo:10, joox:10},
       perSourcePage:{migu:1, netease:1, qq:1, kuwo:1, joox:1},
@@ -1660,6 +1667,8 @@
       lyricsAlt:false,
       muted:false
     };
+
+    const LIBRARY_STORAGE_KEY = 'pikachu-music-library-v1';
 
     const dom = {};
     let audioLevel = 0;
@@ -1713,6 +1722,7 @@
       dom.playlistNameInput.placeholder = lang==='zh'
         ? '例如：通勤歌单 / 宝可梦歌单'
         : 'e.g. Commute mix / Pokemon list';
+      if(dom.playlistSelect) renderPlaylistOptions();
       updatePlaylistInfoLabel();
     }
 
@@ -1744,6 +1754,130 @@
       }
       // 其他一律当作 320K 显示
       return {tag:'320k', label:'320K'};
+    }
+
+    // ===================== 歌单缓存 / 导出 =====================
+
+    function serializeTrack(track){
+      if(!track) return null;
+      const keys=[
+        'uid','source','displayIndex','keyword','requestNum','songid','songMid','qqId','qqSearchKey','qqIndex',
+        'jooxIndex','jooxSongId','jooxSongMid','title','artist','album','cover','pageUrl',
+        'quality','qualityLabel','qqQualityText','jooxQualityText','pay'
+      ];
+      const out={};
+      keys.forEach(k=>{
+        if(track[k]!==undefined && track[k]!==null && track[k]!=='') out[k]=track[k];
+      });
+      out.detailsLoaded=false;
+      out.audioUrl=null;
+      out.lrc=null;
+      out.lrcUrl=null;
+      return out.uid ? out : null;
+    }
+
+    function deserializeTrack(raw){
+      const track=serializeTrack(raw);
+      if(!track) return null;
+      track.detailsLoaded=false;
+      track.audioUrl=null;
+      track.lrc=null;
+      track.lrcUrl=null;
+      return track;
+    }
+
+    function getLibrarySnapshot(){
+      return {
+        version:1,
+        savedAt:new Date().toISOString(),
+        favorites:state.favorites.map(serializeTrack).filter(Boolean),
+        playlists:state.playlists.map(pl=>({
+          id:pl.id,
+          name:pl.name,
+          tracks:(pl.tracks||[]).map(serializeTrack).filter(Boolean)
+        }))
+      };
+    }
+
+    function saveLibraryToStorage(){
+      try{
+        localStorage.setItem(LIBRARY_STORAGE_KEY, JSON.stringify(getLibrarySnapshot()));
+      }catch(e){
+        console.warn('save library failed', e);
+      }
+    }
+
+    function rebuildLibraryTrackMap(){
+      [...state.favorites, ...state.playlists.flatMap(pl=>pl.tracks||[])].forEach(track=>{
+        if(track && track.uid && !state.trackMap.has(track.uid)){
+          state.trackMap.set(track.uid, track);
+        }
+      });
+    }
+
+    function loadLibraryFromStorage(){
+      try{
+        const raw=localStorage.getItem(LIBRARY_STORAGE_KEY);
+        if(!raw) return;
+        const data=JSON.parse(raw);
+        state.favorites=Array.isArray(data.favorites)
+          ? data.favorites.map(deserializeTrack).filter(Boolean)
+          : [];
+        state.playlists=Array.isArray(data.playlists)
+          ? data.playlists.map((pl,idx)=>({
+              id:pl.id || ('pl-cached-'+idx+'-'+Date.now()),
+              name:pl.name || (state.language==='zh'?'未命名歌单':'Untitled Playlist'),
+              tracks:Array.isArray(pl.tracks) ? pl.tracks.map(deserializeTrack).filter(Boolean) : []
+            }))
+          : [];
+        rebuildLibraryTrackMap();
+      }catch(e){
+        console.warn('load library failed', e);
+      }
+    }
+
+    function exportPlaylistData(){
+      const payload=getLibrarySnapshot();
+      const hasAny=payload.favorites.length || payload.playlists.length;
+      if(!hasAny){showToast(t('toastPlaylistExportEmpty'));return;}
+
+      const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      const date=new Date().toISOString().slice(0,10);
+      a.href=url;
+      a.download='pikachu-music-playlists-'+date+'.json';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      showToast(t('toastPlaylistExported'));
+    }
+
+    function renderPlaylistOptions(){
+      if(!dom.playlistSelect) return;
+      const prev=dom.playlistSelect.value || state.playContext.playlistId;
+      dom.playlistSelect.innerHTML='';
+
+      if(!state.playlists.length){
+        const opt=document.createElement('option');
+        opt.value='';
+        opt.textContent=state.language==='zh'?'暂无歌单':'No playlist';
+        dom.playlistSelect.appendChild(opt);
+        state.playContext.playlistId=null;
+        return;
+      }
+
+      state.playlists.forEach(pl=>{
+        const opt=document.createElement('option');
+        opt.value=pl.id;
+        opt.textContent=pl.name;
+        dom.playlistSelect.appendChild(opt);
+      });
+
+      const nextValue=state.playlists.some(pl=>pl.id===prev) ? prev : state.playlists[0].id;
+      dom.playlistSelect.value=nextValue;
+      state.playContext.playlistId=nextValue;
     }
 
     // ===================== 各平台搜索 =====================
@@ -2513,6 +2647,7 @@
       const i=state.favorites.findIndex(x=>x.uid===tr.uid);
       if(i>=0){state.favorites.splice(i,1);showToast(t('toastRemovedFavorite'));}
       else{state.favorites.push(tr);showToast(t('toastAddedFavorite'));}
+      saveLibraryToStorage();
       updateMainFavButton();
       renderPlaylistList();
     }
@@ -2535,6 +2670,7 @@
         return;
       }
       pl.tracks.push(track);
+      saveLibraryToStorage();
       renderPlaylistList();
       showToast(t('toastAddedToPlaylist'));
     }
@@ -2608,17 +2744,14 @@
         dom.playlistSelectRow.style.display='none';
       }else{
         dom.playlistSelectRow.style.display='flex';
+        renderPlaylistOptions();
         if(!state.playlists.length){
-          dom.playlistSelect.innerHTML='';
-          const opt=document.createElement('option');
-          opt.value=''; opt.textContent=state.language==='zh'?'暂无歌单':'No playlist';
-          dom.playlistSelect.appendChild(opt);
           updatePlaylistInfoLabel();
           return;
         }
-        if(!dom.playlistSelect.value)dom.playlistSelect.value=state.playlists[0].id;
         const pl=state.playlists.find(p=>p.id===dom.playlistSelect.value)||state.playlists[0];
         dom.playlistSelect.value=pl.id;
+        state.playContext.playlistId=pl.id;
         list=pl.tracks;
       }
       updatePlaylistInfoLabel();
@@ -2677,6 +2810,7 @@
           const i=state.favorites.findIndex(x=>x.uid===track.uid);
           if(i>=0){state.favorites.splice(i,1);showToast(t('toastRemovedFavorite'));}
           else{state.favorites.push(track);showToast(t('toastAddedFavorite'));}
+          saveLibraryToStorage();
           renderPlaylistList();
           updateMainFavButton();
         });
@@ -2709,10 +2843,10 @@
       const id='pl-'+Date.now()+'-'+Math.random().toString(16).slice(2);
       const pl={id,name,tracks:[]};
       state.playlists.push(pl);
-      const opt=document.createElement('option');
-      opt.value=pl.id; opt.textContent=pl.name;
-      dom.playlistSelect.appendChild(opt);
+      state.playContext.playlistId=pl.id;
+      renderPlaylistOptions();
       dom.playlistSelect.value=pl.id;
+      saveLibraryToStorage();
       closePlaylistModal();
       renderPlaylistList();
       showToast(t('toastPlaylistCreated'));
@@ -2868,6 +3002,7 @@
       dom.playlistSelectRow=$('playlist-select-row');
       dom.playlistSelect=$('playlist-select');
       dom.newPlaylistBtn=$('new-playlist-btn');
+      dom.exportPlaylistBtn=$('export-playlist-btn');
       dom.addCurrentBtn=$('add-current-btn');
 
       dom.playlistModal=$('playlist-modal');
@@ -3010,6 +3145,7 @@
       });
 
       dom.newPlaylistBtn.addEventListener('click',openPlaylistModal);
+      dom.exportPlaylistBtn.addEventListener('click',exportPlaylistData);
       dom.playlistConfirmBtn.addEventListener('click',createPlaylist);
       dom.playlistCancelBtn.addEventListener('click',closePlaylistModal);
       dom.playlistCloseBtn.addEventListener('click',closePlaylistModal);
@@ -3076,10 +3212,13 @@
     function init(){
       setupDOM();
       try{const lg=localStorage.getItem('pikachu-music-lang'); if(lg)state.language=lg;}catch(e){}
+      loadLibraryFromStorage();
       setupParticles();
       setupRipple();
       setupEvents();
       setLanguage(state.language);
+      renderPlaylistOptions();
+      renderPlaylistList();
       setPlaymodeUI();
       dom.audio.volume=parseFloat(dom.volumeSlider.value);
     }
