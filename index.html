@@ -389,6 +389,7 @@
     .source-dot.netease{ background:#ff6b6b; color:#ff6b6b;}
     .source-dot.qq     { background:#4dd0e1; color:#4dd0e1;}
     .source-dot.kuwo   { background:#ba68c8; color:#ba68c8;}
+    .source-dot.joox   { background:#65f7c4; color:#65f7c4;}
 
     .limit-row {
       display: flex;
@@ -590,6 +591,7 @@
     .source-pill.source-netease{ color:#ff7b7b; background:rgba(255,107,107,0.12);}
     .source-pill.source-qq     { color:#7ee5f0; background:rgba(77,208,225,0.12);}
     .source-pill.source-kuwo   { color:#e2baff; background:rgba(186,104,200,0.12);}
+    .source-pill.source-joox   { color:#9dffd9; background:rgba(101,247,196,0.12);}
 
     .lossless-pill {
       padding:2px 8px;
@@ -1276,6 +1278,11 @@
               <input type="checkbox" data-source="kuwo" checked />
               <span>酷我</span>
             </label>
+            <label class="source-chip ripple-target">
+              <span class="source-dot joox"></span>
+              <input type="checkbox" data-source="joox" checked />
+              <span>JOOX</span>
+            </label>
           </div>
 
           <div class="limit-row">
@@ -1506,7 +1513,7 @@
         shortcutFocusSearch:"聚焦搜索框",
         shortcutCloseModal:"提示：按 Esc 可以关闭弹窗。",
         searchTitle:"歌曲搜索",
-        searchSubtitle:"支持咪咕 / 网易云 / QQ / 酷我",
+        searchSubtitle:"支持咪咕 / 网易云 / QQ / 酷我 / JOOX",
         searchButton:"搜索",
         perSourceCount:"每个源加载",
         perSourceCountTail:"首结果",
@@ -1553,6 +1560,7 @@
         sourceNetease:"网易云",
         sourceQQ:"QQ音乐",
         sourceKuwo:"酷我",
+        sourceJoox:"JOOX",
         modalNewPlaylistTitle:"新建歌单",
         modalNewPlaylistDesc:"给你的歌单取一个可爱的名字吧～",
         modalConfirm:"确定",
@@ -1574,7 +1582,7 @@
         shortcutFocusSearch:"Focus on search box",
         shortcutCloseModal:"Tip: press Esc to close dialogs.",
         searchTitle:"Search",
-        searchSubtitle:"Supports Migu / Netease / QQ / Kuwo",
+        searchSubtitle:"Supports Migu / Netease / QQ / Kuwo / JOOX",
         searchButton:"Search",
         perSourceCount:"Per source",
         perSourceCountTail:"results",
@@ -1621,6 +1629,7 @@
         sourceNetease:"Netease",
         sourceQQ:"QQ Music",
         sourceKuwo:"Kuwo",
+        sourceJoox:"JOOX",
         modalNewPlaylistTitle:"Create Playlist",
         modalNewPlaylistDesc:"Give your playlist a cute name!",
         modalConfirm:"Confirm",
@@ -1630,10 +1639,10 @@
 
     const state = {
       language:'zh',
-      enabledSources:{migu:true, netease:true, qq:true, kuwo:true},
+      enabledSources:{migu:true, netease:true, qq:true, kuwo:true, joox:true},
       perSourceLimit:10,
-      perSourceCurrentLimit:{migu:10, netease:10, qq:10, kuwo:10},
-      perSourcePage:{migu:1, netease:1, qq:1, kuwo:1},
+      perSourceCurrentLimit:{migu:10, netease:10, qq:10, kuwo:10, joox:10},
+      perSourcePage:{migu:1, netease:1, qq:1, kuwo:1, joox:1},
 
       searchKeyword:'',
       searchResults:[],
@@ -1670,11 +1679,11 @@
     }
 
     function getInterleavedSearchList(){
-      const grouped={migu:[],netease:[],qq:[],kuwo:[]};
+      const grouped={migu:[],netease:[],qq:[],kuwo:[],joox:[]};
       state.searchResults.forEach(t=>{if(grouped[t.source])grouped[t.source].push(t);});
       Object.keys(grouped).forEach(k=>grouped[k].sort((a,b)=>(a.displayIndex||0)-(b.displayIndex||0)));
-      const order=['migu','netease','qq','kuwo'];
-      const idx={migu:0,netease:0,qq:0,kuwo:0};
+      const order=['migu','netease','qq','kuwo','joox'];
+      const idx={migu:0,netease:0,qq:0,kuwo:0,joox:0};
       const out=[];
       let added=true;
       while(added){
@@ -1934,6 +1943,55 @@
       return added;
     }
 
+    const JOOX_TOKEN = 'f84ao9lMF_q7husBWRfgUw';
+    const JOOX_BR = 4;
+
+    // JOOX 搜索
+    async function searchJoox(kw, limit){
+      const url=`https://apicx.asia/api/joox_music?msg=${encodeURIComponent(kw)}&token=${encodeURIComponent(JOOX_TOKEN)}&br=${encodeURIComponent(JOOX_BR)}`;
+      let added=0;
+      try{
+        const res=await fetch(url);
+        const json=await res.json();
+        const songs=json && json.code===200 && json.data && Array.isArray(json.data.songs) ? json.data.songs : [];
+        songs.slice(0, limit || songs.length).forEach((it, idx)=>{
+          const songMid=it.songmid || '';
+          const songId=it['歌曲ID'] || songMid || (idx+1);
+          const uid=`joox-${songMid || songId}`;
+          if(state.trackMap.has(uid))return;
+
+          const track={
+            uid,
+            source:'joox',
+            displayIndex:idx+1,
+            keyword:kw,
+            jooxIndex:idx+1,
+            songid:songId,
+            songMid:songMid,
+
+            title:it['歌曲名称']||'',
+            artist:it['歌手']||'',
+            album:it['专辑']||'',
+
+            cover:null,
+            audioUrl:null,
+            lrc:it['歌词内容']||null,
+            lrcUrl:null,
+            detailsLoaded:false,
+            quality:null,
+            qualityLabel:null
+          };
+
+          state.trackMap.set(uid,track);
+          state.searchResults.push(track);
+          added++;
+        });
+      }catch(e){
+        console.error('joox search',e);
+      }
+      return added;
+    }
+
     // ===================== 聚合搜索 =====================
 
     async function searchAllSources(reset){
@@ -1962,6 +2020,7 @@
         if(s==='netease')tasks.push(searchNetease(kw, state.perSourcePage.netease || 1, state.perSourceLimit));
         if(s==='qq')tasks.push(searchQQ(kw,limit));
         if(s==='kuwo')tasks.push(searchKuwo(kw,limit));
+        if(s==='joox')tasks.push(searchJoox(kw,limit));
       }
       let added=0;
       try{
@@ -2171,12 +2230,62 @@
       }
     }
 
+    async function fetchJooxDetails(track){
+      const n=track.jooxIndex || track.displayIndex || 1;
+      const url=`https://apicx.asia/api/joox_music?msg=${encodeURIComponent(track.keyword)}&n=${encodeURIComponent(n)}&token=${encodeURIComponent(JOOX_TOKEN)}&br=${encodeURIComponent(JOOX_BR)}`;
+      const res=await fetch(url);
+      const j=await res.json();
+      if(!j || j.code!==200 || !j.data) throw new Error('joox detail failed');
+
+      const d=j.data;
+      const playLinks=d['播放链接']||{};
+
+      function pickJooxPlayUrl(links){
+        const order=['母带无损','Hi-Res无损','无损FLAC','Atmos全景声','OGG 320','MP3 320','AAC 192','OGG 192','MP3 128','AAC 96','AAC 48'];
+        for(const name of order){
+          const u=links[name];
+          if(!u)continue;
+          if(/母带|无损|flac|hi-res|atmos/i.test(name) || /\.flac(?:\?|$)/i.test(u)){
+            return {url:u, tag:'lossless', label:'LOSSLESS', text:name};
+          }
+          const m=name.match(/(\d+)$/);
+          if(m)return {url:u, tag:m[1]+'k', label:m[1]+'K', text:name};
+          return {url:u, tag:null, label:null, text:name};
+        }
+        return {url:null, tag:null, label:null, text:null};
+      }
+
+      const best=pickJooxPlayUrl(playLinks);
+      Object.assign(track,{
+        title:d['歌曲名称']||track.title,
+        artist:d['歌手']||track.artist,
+        album:d['专辑']||track.album,
+        songid:d['歌曲ID']||track.songid,
+        songMid:d.songmid||track.songMid,
+        audioUrl:best.url||track.audioUrl,
+        lrc:d['歌词内容']||track.lrc||null,
+        lrcUrl:null,
+        jooxQualityText:best.text||track.jooxQualityText||null,
+        detailsLoaded:true
+      });
+
+      if(best.tag && best.label){
+        track.quality=best.tag;
+        track.qualityLabel=best.label;
+      }else if(track.audioUrl){
+        const q=inferQualityFromUrl(track.audioUrl);
+        track.quality=q.tag;
+        track.qualityLabel=q.label;
+      }
+    }
+
     async function ensureTrackDetails(track){
       if(track.detailsLoaded && track.audioUrl && (track.lrc || !track.lrcUrl)) return;
       dom.playerStatus.textContent=t('playerStatusLoading');
       if(track.source==='migu') await fetchMiguDetails(track);
       else if(track.source==='netease') await fetchNeteaseDetails(track);
       else if(track.source==='kuwo') await fetchKuwoDetails(track);
+      else if(track.source==='joox') await fetchJooxDetails(track);
       else await fetchQQDetails(track);
     }
 
@@ -2276,7 +2385,8 @@
         const sk=track.source;
         const key=sk==='migu'?'sourceMigu':
                   sk==='netease'?'sourceNetease':
-                  sk==='qq'?'sourceQQ':'sourceKuwo';
+                  sk==='qq'?'sourceQQ':
+                  sk==='joox'?'sourceJoox':'sourceKuwo';
         dom.trackSourcePill.style.display='inline-flex';
         dom.trackSourcePill.className='source-pill source-'+sk;
         dom.trackSourcePill.innerHTML='';
@@ -2455,7 +2565,8 @@
         dot.className='source-dot '+track.source;
         const key=track.source==='migu'?'sourceMigu':
                  track.source==='netease'?'sourceNetease':
-                 track.source==='qq'?'sourceQQ':'sourceKuwo';
+                 track.source==='qq'?'sourceQQ':
+                 track.source==='joox'?'sourceJoox':'sourceKuwo';
         const txt=document.createElement('span');
         txt.textContent=t(key);
         src.appendChild(dot);src.appendChild(txt);
@@ -2530,7 +2641,8 @@
         const dot=document.createElement('span'); dot.className='source-dot '+track.source;
         const key=track.source==='migu'?'sourceMigu':
                  track.source==='netease'?'sourceNetease':
-                 track.source==='qq'?'sourceQQ':'sourceKuwo';
+                 track.source==='qq'?'sourceQQ':
+                 track.source==='joox'?'sourceJoox':'sourceKuwo';
         const txt=document.createElement('span'); txt.textContent=t(key);
         sSpan.appendChild(dot);sSpan.appendChild(txt);
         sub.appendChild(aSpan);sub.appendChild(sSpan);
