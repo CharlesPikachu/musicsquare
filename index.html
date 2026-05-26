@@ -25,6 +25,271 @@
       --border-subtle: rgba(255, 255, 255, 0.12);
     }
 
+    /* ========== 网易云音乐主题 - 红色风格 ========== */
+    [data-theme="netease"] {
+      --bg-dark: #1a0a0a;
+      --panel-glass: rgba(40, 15, 15, 0.35);
+      --panel-glass-soft: rgba(50, 20, 20, 0.35);
+      --accent: #ec4141;
+      --accent-strong: #ff6b6b;
+      --accent-pink: #ff8a80;
+      --accent-blue: #ff5252;
+      --accent-green: #ff7043;
+      --accent-red: #ec4141;
+      --text-main: #fff5f5;
+      --text-sub: #d4a0a0;
+      --border-subtle: rgba(236, 65, 65, 0.2);
+      --theme-gradient-1: rgba(236, 65, 65, 0.15);
+      --theme-gradient-2: rgba(180, 40, 40, 0.2);
+      --theme-glow: rgba(236, 65, 65, 0.4);
+    }
+    [data-theme="netease"] .app {
+      background: radial-gradient(circle at 0 0, rgba(236,65,65,0.08), transparent 60%),
+                  radial-gradient(circle at 100% 100%, rgba(180,40,40,0.12), transparent 60%),
+                  rgba(20,5,5,0.55);
+      box-shadow: 0 0 40px rgba(0,0,0,0.9), 0 0 120px rgba(236,65,65,0.25);
+    }
+    [data-theme="netease"] #bg-canvas {
+      background: radial-gradient(circle at 10% 0, #2a1515 0, transparent 55%),
+                  radial-gradient(circle at 90% 100%, #1f0f0f 0, transparent 60%),
+                  #1a0a0a;
+    }
+    [data-theme="netease"] .player-panel {
+      background: radial-gradient(circle at 50% -40%, rgba(236,65,65,0.18), transparent 60%),
+                  var(--panel-glass);
+    }
+    [data-theme="netease"] .playlist-panel {
+      background: radial-gradient(circle at 100% -40%, rgba(236,65,65,0.18), transparent 60%),
+                  var(--panel-glass);
+    }
+    [data-theme="netease"] .pikachu-box {
+      background: radial-gradient(circle at 30% 0, rgba(255,255,255,0.65), rgba(236,65,65,1)),
+                  radial-gradient(circle at 70% 100%, rgba(255,100,100,0.9), rgba(236,65,65,0.9));
+      box-shadow: 0 0 18px rgba(236,65,65,1), 0 14px 28px rgba(0,0,0,0.95);
+      border-color: rgba(255,150,150,1);
+    }
+    [data-theme="netease"] .title-text h1 {
+      text-shadow: 0 0 12px rgba(236,65,65,0.9), 0 0 26px rgba(255,100,100,0.7);
+    }
+    [data-theme="netease"] .btn {
+      background: radial-gradient(circle at 30% 0, rgba(255,255,255,0.2), var(--accent));
+      box-shadow: 0 7px 16px rgba(236,65,65,0.65);
+    }
+    [data-theme="netease"] .search-row {
+      background: radial-gradient(circle at 0 0, rgba(236,65,65,0.18), transparent 60%),
+                  radial-gradient(circle at 100% 100%, rgba(180,40,40,0.25), transparent 60%),
+                  rgba(30,10,10,0.98);
+    }
+    [data-theme="netease"] .lyrics-line.active {
+      background: linear-gradient(120deg, #ffb3b3, #ff6b6b, #ff8a80);
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-shadow: 0 0 10px rgba(255,255,255,0.7), 0 0 22px rgba(236,65,65,0.9), 0 0 30px rgba(255,100,100,1);
+    }
+    [data-theme="netease"] .progress-bar {
+      background: linear-gradient(90deg, #ff6b6b, #ec4141, #ff8a80);
+    }
+
+    /* ========== QQ音乐主题 - 绿色风格 ========== */
+    [data-theme="qq"] {
+      --bg-dark: #0a1a12;
+      --panel-glass: rgba(15, 40, 25, 0.35);
+      --panel-glass-soft: rgba(20, 50, 30, 0.35);
+      --accent: #31c27c;
+      --accent-strong: #4dd0a0;
+      --accent-pink: #66d9a0;
+      --accent-blue: #2dbd70;
+      --accent-green: #31c27c;
+      --accent-red: #ff6b6b;
+      --text-main: #f0fff5;
+      --text-sub: #a0d4b5;
+      --border-subtle: rgba(49, 194, 124, 0.2);
+      --theme-gradient-1: rgba(49, 194, 124, 0.15);
+      --theme-gradient-2: rgba(30, 150, 90, 0.2);
+      --theme-glow: rgba(49, 194, 124, 0.4);
+    }
+    [data-theme="qq"] .app {
+      background: radial-gradient(circle at 0 0, rgba(49,194,124,0.08), transparent 60%),
+                  radial-gradient(circle at 100% 100%, rgba(30,150,90,0.12), transparent 60%),
+                  rgba(5,20,12,0.55);
+      box-shadow: 0 0 40px rgba(0,0,0,0.9), 0 0 120px rgba(49,194,124,0.25);
+    }
+    [data-theme="qq"] #bg-canvas {
+      background: radial-gradient(circle at 10% 0, #152a1a 0, transparent 55%),
+                  radial-gradient(circle at 90% 100%, #0f1f15 0, transparent 60%),
+                  #0a1a12;
+    }
+    [data-theme="qq"] .player-panel {
+      background: radial-gradient(circle at 50% -40%, rgba(49,194,124,0.18), transparent 60%),
+                  var(--panel-glass);
+    }
+    [data-theme="qq"] .playlist-panel {
+      background: radial-gradient(circle at 100% -40%, rgba(49,194,124,0.18), transparent 60%),
+                  var(--panel-glass);
+    }
+    [data-theme="qq"] .pikachu-box {
+      background: radial-gradient(circle at 30% 0, rgba(255,255,255,0.65), rgba(49,194,124,1)),
+                  radial-gradient(circle at 70% 100%, rgba(100,220,160,0.9), rgba(49,194,124,0.9));
+      box-shadow: 0 0 18px rgba(49,194,124,1), 0 14px 28px rgba(0,0,0,0.95);
+      border-color: rgba(150,255,200,1);
+    }
+    [data-theme="qq"] .title-text h1 {
+      text-shadow: 0 0 12px rgba(49,194,124,0.9), 0 0 26px rgba(100,220,160,0.7);
+    }
+    [data-theme="qq"] .btn {
+      background: radial-gradient(circle at 30% 0, rgba(255,255,255,0.2), var(--accent));
+      box-shadow: 0 7px 16px rgba(49,194,124,0.65);
+    }
+    [data-theme="qq"] .search-row {
+      background: radial-gradient(circle at 0 0, rgba(49,194,124,0.18), transparent 60%),
+                  radial-gradient(circle at 100% 100%, rgba(30,150,90,0.25), transparent 60%),
+                  rgba(10,30,18,0.98);
+    }
+    [data-theme="qq"] .lyrics-line.active {
+      background: linear-gradient(120deg, #b3ffd9, #31c27c, #66d9a0);
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-shadow: 0 0 10px rgba(255,255,255,0.7), 0 0 22px rgba(49,194,124,0.9), 0 0 30px rgba(100,220,160,1);
+    }
+    [data-theme="qq"] .progress-bar {
+      background: linear-gradient(90deg, #66d9a0, #31c27c, #4dd0a0);
+    }
+
+    /* ========== 酷我音乐主题 - 紫色风格 ========== */
+    [data-theme="kuwo"] {
+      --bg-dark: #120a1a;
+      --panel-glass: rgba(30, 15, 50, 0.35);
+      --panel-glass-soft: rgba(40, 20, 60, 0.35);
+      --accent: #ba68c8;
+      --accent-strong: #ce93d8;
+      --accent-pink: #f48fb1;
+      --accent-blue: #9575cd;
+      --accent-green: #81c784;
+      --accent-red: #ef5350;
+      --text-main: #faf5ff;
+      --text-sub: #c9a0dc;
+      --border-subtle: rgba(186, 104, 200, 0.2);
+      --theme-gradient-1: rgba(186, 104, 200, 0.15);
+      --theme-gradient-2: rgba(140, 70, 160, 0.2);
+      --theme-glow: rgba(186, 104, 200, 0.4);
+    }
+    [data-theme="kuwo"] .app {
+      background: radial-gradient(circle at 0 0, rgba(186,104,200,0.08), transparent 60%),
+                  radial-gradient(circle at 100% 100%, rgba(140,70,160,0.12), transparent 60%),
+                  rgba(15,8,25,0.55);
+      box-shadow: 0 0 40px rgba(0,0,0,0.9), 0 0 120px rgba(186,104,200,0.25);
+    }
+    [data-theme="kuwo"] #bg-canvas {
+      background: radial-gradient(circle at 10% 0, #1f152a 0, transparent 55%),
+                  radial-gradient(circle at 90% 100%, #150f20 0, transparent 60%),
+                  #120a1a;
+    }
+    [data-theme="kuwo"] .player-panel {
+      background: radial-gradient(circle at 50% -40%, rgba(186,104,200,0.18), transparent 60%),
+                  var(--panel-glass);
+    }
+    [data-theme="kuwo"] .playlist-panel {
+      background: radial-gradient(circle at 100% -40%, rgba(186,104,200,0.18), transparent 60%),
+                  var(--panel-glass);
+    }
+    [data-theme="kuwo"] .pikachu-box {
+      background: radial-gradient(circle at 30% 0, rgba(255,255,255,0.65), rgba(186,104,200,1)),
+                  radial-gradient(circle at 70% 100%, rgba(220,150,240,0.9), rgba(186,104,200,0.9));
+      box-shadow: 0 0 18px rgba(186,104,200,1), 0 14px 28px rgba(0,0,0,0.95);
+      border-color: rgba(230,200,255,1);
+    }
+    [data-theme="kuwo"] .title-text h1 {
+      text-shadow: 0 0 12px rgba(186,104,200,0.9), 0 0 26px rgba(220,150,240,0.7);
+    }
+    [data-theme="kuwo"] .btn {
+      background: radial-gradient(circle at 30% 0, rgba(255,255,255,0.2), var(--accent));
+      box-shadow: 0 7px 16px rgba(186,104,200,0.65);
+    }
+    [data-theme="kuwo"] .search-row {
+      background: radial-gradient(circle at 0 0, rgba(186,104,200,0.18), transparent 60%),
+                  radial-gradient(circle at 100% 100%, rgba(140,70,160,0.25), transparent 60%),
+                  rgba(25,12,40,0.98);
+    }
+    [data-theme="kuwo"] .lyrics-line.active {
+      background: linear-gradient(120deg, #e1bee7, #ba68c8, #ce93d8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-shadow: 0 0 10px rgba(255,255,255,0.7), 0 0 22px rgba(186,104,200,0.9), 0 0 30px rgba(220,150,240,1);
+    }
+    [data-theme="kuwo"] .progress-bar {
+      background: linear-gradient(90deg, #ce93d8, #ba68c8, #f48fb1);
+    }
+
+    /* ========== JOOX主题 - 青绿色风格 ========== */
+    [data-theme="joox"] {
+      --bg-dark: #0a1a18;
+      --panel-glass: rgba(15, 45, 40, 0.35);
+      --panel-glass-soft: rgba(20, 55, 48, 0.35);
+      --accent: #65f7c4;
+      --accent-strong: #8fffd9;
+      --accent-pink: #7dfff0;
+      --accent-blue: #4ac8ff;
+      --accent-green: #65f7c4;
+      --accent-red: #ff5c7a;
+      --text-main: #f0fffa;
+      --text-sub: #a0d9c8;
+      --border-subtle: rgba(101, 247, 196, 0.2);
+      --theme-gradient-1: rgba(101, 247, 196, 0.15);
+      --theme-gradient-2: rgba(60, 180, 140, 0.2);
+      --theme-glow: rgba(101, 247, 196, 0.4);
+    }
+    [data-theme="joox"] .app {
+      background: radial-gradient(circle at 0 0, rgba(101,247,196,0.08), transparent 60%),
+                  radial-gradient(circle at 100% 100%, rgba(60,180,140,0.12), transparent 60%),
+                  rgba(5,25,22,0.55);
+      box-shadow: 0 0 40px rgba(0,0,0,0.9), 0 0 120px rgba(101,247,196,0.25);
+    }
+    [data-theme="joox"] #bg-canvas {
+      background: radial-gradient(circle at 10% 0, #152a25 0, transparent 55%),
+                  radial-gradient(circle at 90% 100%, #0f1f1a 0, transparent 60%),
+                  #0a1a18;
+    }
+    [data-theme="joox"] .player-panel {
+      background: radial-gradient(circle at 50% -40%, rgba(101,247,196,0.18), transparent 60%),
+                  var(--panel-glass);
+    }
+    [data-theme="joox"] .playlist-panel {
+      background: radial-gradient(circle at 100% -40%, rgba(101,247,196,0.18), transparent 60%),
+                  var(--panel-glass);
+    }
+    [data-theme="joox"] .pikachu-box {
+      background: radial-gradient(circle at 30% 0, rgba(255,255,255,0.65), rgba(101,247,196,1)),
+                  radial-gradient(circle at 70% 100%, rgba(120,255,210,0.9), rgba(101,247,196,0.9));
+      box-shadow: 0 0 18px rgba(101,247,196,1), 0 14px 28px rgba(0,0,0,0.95);
+      border-color: rgba(180,255,220,1);
+    }
+    [data-theme="joox"] .title-text h1 {
+      text-shadow: 0 0 12px rgba(101,247,196,0.9), 0 0 26px rgba(120,255,210,0.7);
+    }
+    [data-theme="joox"] .btn {
+      background: radial-gradient(circle at 30% 0, rgba(255,255,255,0.2), var(--accent));
+      color: #0a2018;
+      box-shadow: 0 7px 16px rgba(101,247,196,0.65);
+    }
+    [data-theme="joox"] .search-row {
+      background: radial-gradient(circle at 0 0, rgba(101,247,196,0.18), transparent 60%),
+                  radial-gradient(circle at 100% 100%, rgba(60,180,140,0.25), transparent 60%),
+                  rgba(10,35,30,0.98);
+    }
+    [data-theme="joox"] .lyrics-line.active {
+      background: linear-gradient(120deg, #b3ffe8, #65f7c4, #8fffd9);
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-shadow: 0 0 10px rgba(255,255,255,0.7), 0 0 22px rgba(101,247,196,0.9), 0 0 30px rgba(120,255,210,1);
+    }
+    [data-theme="joox"] .progress-bar {
+      background: linear-gradient(90deg, #8fffd9, #65f7c4, #7dfff0);
+    }
+    [data-theme="joox"] .source-pill.source-joox {
+      color: #65f7c4;
+      background: rgba(101,247,196,0.18);
+    }
+
     * {
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
@@ -179,6 +444,186 @@
       color: #231b08;
       font-weight: 600;
       box-shadow: 0 0 8px rgba(245,200,76,0.8);
+    }
+
+    .theme-toggle {
+      display: inline-flex;
+      border-radius: 999px;
+      padding: 2px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.4);
+      overflow-x: auto;
+      max-width: 100%;
+    }
+    .theme-btn {
+      border: none;
+      background: transparent;
+      padding: 3px 8px;
+      border-radius: 999px;
+      color: var(--text-sub);
+      font-size: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .theme-btn.active {
+      background: radial-gradient(circle at 30% 0, rgba(255,255,255,0.28), var(--accent));
+      color: #231b08;
+      font-weight: 600;
+      box-shadow: 0 0 8px rgba(245,200,76,0.8);
+    }
+
+    /* 白天/黑夜模式切换 */
+    .darkmode-toggle {
+      display: inline-flex;
+      border-radius: 999px;
+      padding: 2px;
+      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.4);
+    }
+    .darkmode-btn {
+      border: none;
+      background: transparent;
+      padding: 3px 8px;
+      border-radius: 999px;
+      color: var(--text-sub);
+      font-size: 12px;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .darkmode-btn.active {
+      background: radial-gradient(circle at 30% 0, rgba(255,255,255,0.28), var(--accent));
+      font-weight: 600;
+      box-shadow: 0 0 8px rgba(245,200,76,0.8);
+    }
+
+    /* ========== 白天模式样式 ========== */
+    [data-mode="light"] {
+      --bg-dark: #f5f5f7;
+      --panel-glass: rgba(255, 255, 255, 0.7);
+      --panel-glass-soft: rgba(255, 255, 255, 0.6);
+      --text-main: #1d1d1f;
+      --text-sub: #86868b;
+      --border-subtle: rgba(0, 0, 0, 0.1);
+    }
+    [data-mode="light"] body {
+      color: var(--text-main);
+    }
+    [data-mode="light"] .app {
+      background: radial-gradient(circle at 0 0, rgba(245,200,76,0.15), transparent 60%),
+                  radial-gradient(circle at 100% 100%, rgba(136,196,255,0.2), transparent 60%),
+                  rgba(255,255,255,0.85);
+      border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: 0 0 40px rgba(0,0,0,0.1), 0 0 120px rgba(136,196,255,0.15);
+    }
+    [data-mode="light"] #bg-canvas {
+      background: radial-gradient(circle at 10% 0, #e8e8f0 0, transparent 55%),
+                  radial-gradient(circle at 90% 100%, #f0e8f5 0, transparent 60%),
+                  #f5f5f7;
+    }
+    [data-mode="light"] header {
+      background: linear-gradient(120deg, rgba(255,255,255,0.9), rgba(240,240,245,0.95));
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+    [data-mode="light"] .panel {
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+    [data-mode="light"] .player-panel {
+      background: radial-gradient(circle at 50% -40%, rgba(245,200,76,0.2), transparent 60%),
+                  rgba(255,255,255,0.7);
+    }
+    [data-mode="light"] .playlist-panel {
+      background: radial-gradient(circle at 100% -40%, rgba(136,196,255,0.2), transparent 60%),
+                  rgba(255,255,255,0.7);
+    }
+    [data-mode="light"] .search-row {
+      background: radial-gradient(circle at 0 0, rgba(245,200,76,0.2), transparent 60%),
+                  radial-gradient(circle at 100% 100%, rgba(136,196,255,0.25), transparent 60%),
+                  rgba(245,245,247,0.95);
+      border: 1px solid rgba(0,0,0,0.12);
+    }
+    [data-mode="light"] .input {
+      background: rgba(255,255,255,0.9);
+      color: var(--text-main);
+      border-color: rgba(0,0,0,0.15);
+    }
+    [data-mode="light"] .search-mini-item {
+      background: rgba(255,255,255,0.85);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    [data-mode="light"] .search-mini-item:hover {
+      background: rgba(245,245,250,0.95);
+    }
+    [data-mode="light"] .track-item {
+      background: rgba(255,255,255,0.85);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    [data-mode="light"] .track-item:hover {
+      background: rgba(245,245,250,0.95);
+    }
+    [data-mode="light"] .lyrics-container {
+      background: radial-gradient(circle at 50% 0, rgba(245,200,76,0.2), transparent 60%),
+                  radial-gradient(circle at 10% 100%, rgba(136,196,255,0.2), transparent 60%),
+                  rgba(245,245,247,0.85);
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+    [data-mode="light"] .lyrics-line {
+      color: rgba(29,29,31,0.6);
+    }
+    [data-mode="light"] .lyrics-line.active {
+      color: transparent;
+    }
+    [data-mode="light"] .source-chip {
+      background: rgba(255,255,255,0.9);
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    [data-mode="light"] .playlist-bar {
+      background: linear-gradient(180deg, rgba(245,245,247,0.98), rgba(245,245,247,0.9));
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+    }
+    [data-mode="light"] .btn-secondary {
+      background: radial-gradient(circle at 30% 0, rgba(255,255,255,0.3), rgba(200,200,210,0.8));
+      color: var(--text-main);
+    }
+    [data-mode="light"] .btn-ghost {
+      border: 1px solid rgba(0,0,0,0.15);
+      color: var(--text-sub);
+    }
+    [data-mode="light"] .progress-bar-wrapper {
+      background: rgba(200,200,210,0.5);
+    }
+    [data-mode="light"] .modal-backdrop {
+      background: rgba(240,240,245,0.9);
+    }
+    [data-mode="light"] .modal {
+      background: radial-gradient(circle at 0 0, rgba(255,255,255,0.95), transparent 60%), rgba(255,255,255,0.98);
+      border: 1px solid rgba(0,0,0,0.1);
+      color: var(--text-main);
+    }
+    [data-mode="light"] .modal input {
+      background: rgba(255,255,255,0.95);
+      border-color: rgba(0,0,0,0.15);
+      color: var(--text-main);
+    }
+    [data-mode="light"] .shortcut-card {
+      background: rgba(255,255,255,0.95);
+      border: 1px solid rgba(0,0,0,0.08);
+    }
+    [data-mode="light"] .darkmode-toggle,
+    [data-mode="light"] .lang-toggle,
+    [data-mode="light"] .theme-toggle {
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    [data-mode="light"] .darkmode-btn,
+    [data-mode="light"] .lang-btn,
+    [data-mode="light"] .theme-btn {
+      color: var(--text-sub);
+    }
+    [data-mode="light"] #toast {
+      background: rgba(255,255,255,0.95);
+      border: 1px solid rgba(0,0,0,0.1);
+      color: var(--text-main);
     }
 
     .shortcut-hint {
@@ -1208,6 +1653,137 @@
           "playlist";
       }
     }
+    @media (max-width:640px){
+      html, body {
+        overflow: auto;
+      }
+      .app {
+        margin: 0;
+        border-radius: 0;
+        height: auto;
+        min-height: 100vh;
+        overflow: auto;
+      }
+      header {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 6px 10px;
+        min-height: auto;
+      }
+      .pikachu-box {
+        width: 48px;
+        height: 48px;
+      }
+      .title-text h1 {
+        font-size: 15px;
+      }
+      .title-text p {
+        font-size: 9px;
+      }
+      .shortcut-hint {
+        display: none;
+      }
+      .layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        grid-template-areas:
+          "player"
+          "search"
+          "playlist";
+      }
+      .player-top {
+        flex-direction: column;
+        align-items: center;
+        min-height: auto;
+      }
+      .cover-wrapper {
+        width: 100px;
+        height: 100px;
+      }
+      .player-main {
+        width: 100%;
+      }
+      .track-title {
+        font-size: 15px;
+      }
+      .track-title-row {
+        flex-direction: column;
+        gap: 4px;
+      }
+      .track-text {
+        max-width: 100%;
+      }
+      .player-actions {
+        flex-direction: row;
+        align-items: center;
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .source-row {
+        flex-wrap: wrap;
+      }
+      .playlist-bar {
+        flex-wrap: wrap;
+      }
+      .playlist-right-controls {
+        flex-wrap: wrap;
+      }
+      .track-actions .btn-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+      }
+      .search-row .btn {
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+      .search-row .input {
+        font-size: 14px;
+        padding: 8px 6px;
+      }
+      .lyrics-container {
+        min-height: 150px;
+      }
+      .control-main .play-btn {
+        width: 48px;
+        height: 48px;
+        font-size: 22px;
+      }
+      .control-main .btn-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+      }
+      .volume-slider {
+        width: 70px;
+      }
+      .header-controls {
+        width: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .theme-toggle {
+        max-width: 100%;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+      }
+      .theme-btn {
+        padding: 4px 6px;
+        font-size: 9px;
+      }
+      .lang-toggle {
+        flex-shrink: 0;
+      }
+      .darkmode-toggle {
+        flex-shrink: 0;
+      }
+      .darkmode-btn {
+        padding: 4px 6px;
+        font-size: 11px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1229,6 +1805,17 @@
         <div class="lang-toggle ripple-target">
           <button class="lang-btn active" data-lang="zh">中</button>
           <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <div class="darkmode-toggle ripple-target">
+          <button class="darkmode-btn active" data-mode="dark" title="黑夜">🌙</button>
+          <button class="darkmode-btn" data-mode="light" title="白天">☀️</button>
+        </div>
+        <div class="theme-toggle ripple-target">
+          <button class="theme-btn active" data-theme="default" title="默认"> Pikachu</button>
+          <button class="theme-btn" data-theme="netease" title="网易云"> 网易云</button>
+          <button class="theme-btn" data-theme="qq" title="QQ音乐"> QQ</button>
+          <button class="theme-btn" data-theme="kuwo" title="酷我"> 酷我</button>
+          <button class="theme-btn" data-theme="joox" title="JOOX"> JOOX</button>
         </div>
         <div class="shortcut-hint" data-i18n="shortcutHint">
           快捷键：Space 播放/暂停 · ←/→ 跳转 · ↑/↓ 音量 · N/P 切歌 · F 收藏 · L 切换歌词效果
@@ -1391,6 +1978,7 @@
           <div class="playlist-bar">
             <span id="playlist-info" class="playlist-info"></span>
             <div class="playlist-right-controls">
+              <button id="batch-download-btn" class="btn btn-ghost ripple-target" style="font-size:10px;padding:3px 8px;">批量下载</button>
               <div id="playlist-select-row" class="playlist-select-row" style="display:none;">
                 <select id="playlist-select"></select>
                 <button id="add-current-btn" class="btn btn-secondary btn-icon ripple-target" title="把当前歌曲加入歌单">＋</button>
@@ -1647,6 +2235,8 @@
 
     const state = {
       language:'zh',
+      theme:'default',
+      darkMode:'dark',
       enabledSources:{netease:true, qq:true, kuwo:true, joox:false},
       perSourceLimit:10,
       perSourceCurrentLimit:{netease:10, qq:10, kuwo:10, joox:10},
@@ -1666,7 +2256,9 @@
       searchInProgress:false,
       noMoreResults:false,
       lyricsAlt:false,
-      muted:false
+      muted:false,
+      batchMode:false,
+      batchSelected:new Set()
     };
 
     const LIBRARY_STORAGE_KEY = 'pikachu-music-library-v1';
@@ -1725,6 +2317,32 @@
         : 'e.g. Commute mix / Pokemon list';
       if(dom.playlistSelect) renderPlaylistOptions();
       updatePlaylistInfoLabel();
+    }
+
+    function setTheme(theme) {
+      state.theme = theme;
+      if (theme === 'default') {
+        document.documentElement.removeAttribute('data-theme');
+      } else {
+        document.documentElement.setAttribute('data-theme', theme);
+      }
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.theme === theme);
+      });
+      try { localStorage.setItem('pikachu-music-theme', theme); } catch(e) {}
+    }
+
+    function setDarkMode(mode) {
+      state.darkMode = mode;
+      if (mode === 'dark') {
+        document.documentElement.removeAttribute('data-mode');
+      } else {
+        document.documentElement.setAttribute('data-mode', mode);
+      }
+      document.querySelectorAll('.darkmode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+      try { localStorage.setItem('pikachu-music-darkmode', mode); } catch(e) {}
     }
 
     // ========== 旧的质量映射函数，暂时保留（不再使用 API 的 quality 字段） ==========
@@ -2740,10 +3358,106 @@
       renderPlaylistList();
     }
 
-    function handleDownloadCurrent(){
+    function inferFileExt(url){
+      if(!url) return '.mp3';
+      const base = url.split('?')[0].toLowerCase();
+      const m = base.match(/\.([a-z0-9]+)$/);
+      if(m){
+        const ext = m[1];
+        if(['mp3','flac','wav','ape','aac','ogg','m4a','wma'].includes(ext)) return '.'+ext;
+      }
+      return '.mp3';
+    }
+
+    async function handleDownloadCurrent(){
       const tr=state.currentTrack;
       if(!tr||!tr.audioUrl){showToast(t('toastDownloadNotReady'));return;}
-      window.open(tr.audioUrl,'_blank');
+      try{
+        showToast(state.language==='zh'?'正在下载：'+tr.title:'Downloading: '+tr.title);
+        const res=await fetch(tr.audioUrl);
+        const blob=await res.blob();
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url;
+        const ext = inferFileExt(tr.audioUrl);
+        const fileName = (tr.title||'music') + (tr.artist?' - '+tr.artist:'') + ext;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }catch(e){
+        console.error(e);
+        window.open(tr.audioUrl,'_blank');
+      }
+    }
+
+    function updateBatchDownloadBtn() {
+      if (!state.batchMode) {
+        dom.batchDownloadBtn.textContent = state.language==='zh'?'批量下载':'Batch DL';
+        dom.batchDownloadBtn.classList.remove('btn-secondary');
+        return;
+      }
+      // 批量模式下，根据是否有选中项显示不同文字
+      if (state.batchSelected.size > 0) {
+        dom.batchDownloadBtn.textContent = state.language==='zh'?`开始下载 (${state.batchSelected.size})`:`Download (${state.batchSelected.size})`;
+        dom.batchDownloadBtn.classList.add('btn-secondary');
+      } else {
+        dom.batchDownloadBtn.textContent = state.language==='zh'?'取消选择':'Cancel';
+        dom.batchDownloadBtn.classList.remove('btn-secondary');
+      }
+    }
+
+    function toggleBatchMode() {
+      state.batchMode = !state.batchMode;
+      state.batchSelected.clear();
+      updateBatchDownloadBtn();
+      renderPlaylistList();
+    }
+
+    async function batchDownload() {
+      const list = getActiveList();
+      const selected = list.filter(t => state.batchSelected.has(t.uid));
+      if (!selected.length) {
+        showToast(state.language==='zh'?'请先选择要下载的歌曲':'Please select songs first');
+        return;
+      }
+
+      showToast(state.language==='zh'?`开始下载 ${selected.length} 首歌曲...`:`Downloading ${selected.length} songs...`);
+
+      for (let i = 0; i < selected.length; i++) {
+        const track = selected[i];
+        showToast(`${i+1}/${selected.length}: ${track.title}`);
+        try {
+          if (!track.audioUrl) {
+            await ensureTrackDetails(track);
+          }
+          if (!track.audioUrl) continue;
+
+          const res = await fetch(track.audioUrl);
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          const ext = inferFileExt(track.audioUrl);
+          const fileName = (track.title||'music') + (track.artist?' - '+track.artist:'') + ext;
+          a.download = fileName;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+
+          await new Promise(r => setTimeout(r, 1000));
+        } catch(e) {
+          console.error('batch download error for', track.title, e);
+        }
+      }
+
+      showToast(state.language==='zh'?'批量下载完成！':'Batch download complete!');
+      state.batchMode = false;
+      state.batchSelected.clear();
+      updateBatchDownloadBtn();
+      renderPlaylistList();
     }
 
     function addCurrentToPlaylist(){
@@ -2847,6 +3561,20 @@
         const item=document.createElement('div');
         item.className='track-item ripple-target';
         if(state.currentTrack && state.currentTrack.uid===track.uid) item.classList.add('playing');
+
+        if(state.batchMode){
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.checked = state.batchSelected.has(track.uid);
+          cb.style.cssText = 'width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0;';
+          cb.addEventListener('change', ev => {
+            ev.stopPropagation();
+            if(cb.checked) state.batchSelected.add(track.uid);
+            else state.batchSelected.delete(track.uid);
+            updateBatchDownloadBtn();
+          });
+          item.appendChild(cb);
+        }
 
         const index=document.createElement('div');
         index.className='track-index'; index.textContent=idx+1;
@@ -3093,6 +3821,8 @@
       dom.exportPlaylistBtn=$('export-playlist-btn');
       dom.addCurrentBtn=$('add-current-btn');
 
+      dom.batchDownloadBtn=$('batch-download-btn');
+
       dom.playlistModal=$('playlist-modal');
       dom.playlistNameInput=$('playlist-name-input');
       dom.playlistConfirmBtn=$('playlist-confirm-btn');
@@ -3113,6 +3843,14 @@
     function setupEvents(){
       document.querySelectorAll('.lang-btn').forEach(btn=>{
         btn.addEventListener('click',()=>setLanguage(btn.dataset.lang));
+      });
+
+      document.querySelectorAll('.theme-btn').forEach(btn=>{
+        btn.addEventListener('click',()=>setTheme(btn.dataset.theme));
+      });
+
+      document.querySelectorAll('.darkmode-btn').forEach(btn=>{
+        btn.addEventListener('click',()=>setDarkMode(btn.dataset.mode));
       });
 
       dom.searchBtn.addEventListener('click',()=>{
@@ -3172,6 +3910,18 @@
       dom.nextBtn.addEventListener('click',()=>playNext('next'));
       dom.favBtn.addEventListener('click',toggleFavoriteCurrent);
       dom.downloadBtn.addEventListener('click',handleDownloadCurrent);
+
+      dom.batchDownloadBtn.addEventListener('click', () => {
+        if(state.batchMode) {
+          if(state.batchSelected.size > 0) {
+            batchDownload();
+          } else {
+            toggleBatchMode();
+          }
+        } else {
+          toggleBatchMode();
+        }
+      });
 
       dom.volumeSlider.addEventListener('input',()=>{
         dom.audio.volume=parseFloat(dom.volumeSlider.value);
@@ -3302,6 +4052,8 @@
     function init(){
       setupDOM();
       try{const lg=localStorage.getItem('pikachu-music-lang'); if(lg)state.language=lg;}catch(e){}
+      try{const th=localStorage.getItem('pikachu-music-theme'); if(th){state.theme=th;setTheme(th);}}catch(e){}
+      try{const dm=localStorage.getItem('pikachu-music-darkmode'); if(dm){state.darkMode=dm;setDarkMode(dm);}}catch(e){}
       loadLibraryFromStorage();
       setupParticles();
       setupRipple();
